@@ -22,7 +22,8 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
 
-COPY . .  # копируем остальные файлы проекта (код бота)
+ # копируем остальные файлы проекта (код бота)
+COPY . .
 
 # Сборка Go-бота (бинарный файл)
 RUN go build -o tg_user_bot .
