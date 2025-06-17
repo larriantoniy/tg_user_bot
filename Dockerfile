@@ -1,19 +1,27 @@
-# Этап 1: Сборка (builder)
-FROM ubuntu:22.04 AS builder
+FROM ubuntu:20.04 AS builder
 
-# Установка зависимостей для сборки TDLib и Go
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential cmake git gperf \
-    libssl-dev zlib1g-dev \
-    golang && \
-    rm -rf /var/lib/apt/lists/*
+# Установка необходимых пакетов: компиляторы, CMake, Git, зависимости TDLib
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    build-essential cmake git gperf zlib1g-dev libssl-dev && \
+    apt-get clean
+# Установка необходимых пакетов: компиляторы, CMake, Git, зависимости TDLib и CA-сертификаты
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y \
+      build-essential \
+      cmake \
+      git \
+      gperf \
+      zlib1g-dev \
+      libssl-dev \
+      ca-certificates && \
+      update-ca-certificates && \
+      apt-get clean
 
-# Клонируем исходники TDLib (master branch) и собираем
-RUN git clone https://github.com/tdlib/td.git && cd td && \
-    mkdir build && cd build && \
-    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local .. && \
-    cmake --build . --target install && \
-    cd ../../ && rm -rf td
+ # Сборка TDLib из исходников
+RUN git clone --branch v1.8.0 --depth=1 https://github.com/tdlib/td.git /tdlib && \
+     cd /tdlib && mkdir build && cd build && \
+     cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local .. && \
+     cmake --build . --target install
 
 # Устанавливаем рабочую директорию для сборки Go-приложения
 WORKDIR /app
