@@ -15,9 +15,9 @@ RUN apt-get update && \
 
  # Сборка TDLib из исходников
 RUN git clone --branch v1.8.0 --depth=1 https://github.com/tdlib/td.git /tdlib && \
-     cd /tdlib && mkdir build && cd build && \
-     cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local .. && \
-     cmake --build . --target install \
+    cd /tdlib && mkdir build && cd build && \
+    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local .. && \
+    cmake --build . --target install
 
 # Этап 2: Сборка Go-приложения
 FROM golang:1.21 AS go-builder
@@ -45,7 +45,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Копируем из builder: скомпилированную библиотеку TDLib и бинарник бота
 COPY --from=tdlib-builder /usr/local/lib/libtdjson.so /usr/local/lib/
-COPY --from=builder /app/tg_user_bot /app/tg_user_bot
+COPY --from=go-builder /app/tg_user_bot /app/tg_user_bot
 
 ENV LD_LIBRARY_PATH="/usr/local/lib"
 # Запускаемый командой процесс — наш собранный бот
