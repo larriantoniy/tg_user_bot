@@ -7,6 +7,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     steps:
       - name: Получение кода
         uses: actions/checkout@v3
@@ -18,7 +19,7 @@ jobs:
           port: ${{ secrets.VPS_PORT }}
           username: ${{ vars.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          timeout: 60m
+
           script: |
             cd /home/deploy || exit 1        # путь до папки с проектом на сервере
             if [ ! -d "tg_user_bot/.git" ]; then
