@@ -17,6 +17,7 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           port: ${{ secrets.VPS_PORT }}
           username: ${{ vars.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
           script: |
             cd /home/deploy/tg_user_bot        # путь до папки с проектом на сервере
             git pull                           # стягиваем последние изменения
