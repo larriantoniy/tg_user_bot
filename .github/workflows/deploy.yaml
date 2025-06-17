@@ -24,7 +24,4 @@ jobs:
             docker compose down                # останавливаем старые контейнеры
             docker compose pull || true        # (если используете образы из реестра)
             docker compose up -d --build       # пересобираем образ и запускаем контейнеры
-
-      - name: Инициализация RediSearch
-        run: |
-          docker compose exec redis bash /scripts/init_redis_search.sh
+            docker compose exec redis bash /scripts/init_redis_search.sh #Инициализация RedisSearch
