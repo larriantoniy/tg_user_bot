@@ -17,9 +17,12 @@ WORKDIR /app
 
 COPY go.mod go.sum ./
 RUN go mod download
+# Копируем tdlib include
+COPY --from=tdlib-builder /tdlib/install/include /usr/local/include
 
 COPY . .
-RUN ls -la
+ENV CGO_CFLAGS="-I/usr/local/include"
+
 RUN go build -o tg_user_bot ./cmd/userbot
 
 # Этап 3: Финальный рантайм-образ

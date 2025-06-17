@@ -30,5 +30,10 @@ jobs:
             docker compose down                # останавливаем старые контейнеры
             docker compose pull || true        # (если используете образы из реестра)
             docker compose up -d --build       # пересобираем образ и запускаем контейнеры
-            docker compose exec redis bash -c 'until redis-cli ping | grep -q PONG; do echo "Ждём Redis..."; sleep 2; done; 
-            bash /scripts/init_redis_search.sh #Инициализация RedisSearch
+            docker compose exec redis bash -c "
+            until redis-cli ping | grep -q PONG; do
+            echo 'Ждём Redis...'
+            sleep 2
+            done
+            bash /scripts/init_redis_search.sh" #Инициализация RedisSearch
+
