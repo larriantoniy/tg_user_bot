@@ -11,7 +11,7 @@ WORKDIR /tdlib/build
 # Сборка TDLib с ограничением параллельности (уменьшаем нагрузку на VPS)
 # Переменная окружения CMAKE_BUILD_PARALLEL_LEVEL или явный флаг -j1
 ENV CMAKE_BUILD_PARALLEL_LEVEL=1
-RUN cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local .. && \
+RUN cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=/usr/local .. && \
     cmake --build . --target install -- -j1
 
 # Этап 2: Go-сборка
