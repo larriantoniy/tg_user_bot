@@ -1,18 +1,7 @@
 # Этап 1: TDLib-builder
 FROM ubuntu:22.04 AS tdlib-builder
 
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    build-essential cmake git gperf zlib1g-dev libssl-dev ca-certificates && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
-
-RUN git clone --branch v1.8.0 --depth=1 https://github.com/tdlib/td.git /tdlib
-
-WORKDIR /tdlib/build
-# Сборка TDLib с ограничением параллельности (уменьшаем нагрузку на VPS)
-# Переменная окружения CMAKE_BUILD_PARALLEL_LEVEL или явный флаг -j1
-ENV CMAKE_BUILD_PARALLEL_LEVEL=1
-RUN cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=/usr/local .. && \
-    cmake --build . --target install -- -j1
+ADD https://github.com/tdlib/td/releases/download/v1.8.0/libtdjson.so /usr/local/lib/
 
 # Этап 2: Go-сборка
 FROM golang:1.21 AS go-builder
