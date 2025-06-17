@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  bot:
+    build: .                   # Собрать образ из Dockerfile в текущей директории
+    container_name: tg-user-bot
+    restart: unless-stopped
+    environment:
+      - TELEGRAM_API_ID=${TELEGRAM_API_ID}
+      - TELEGRAM_API_HASH=${TELEGRAM_API_HASH}
+      - REDIS_ADDR=redis:6379
+      # ...другие переменные окружения при необходимости (см. ниже)
+    depends_on:
+      - redis
+    # Для первой авторизации Telegram юзер-бота:
+    stdin_open: true   # открыть STDIN
+    tty: true          # выделить TTY для взаимодействия
+
+  redis:
+    image: redis/redis-stack-server:latest   # Redis Stack (включает RediSearch)
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+      - ./scripts:/scripts
+
+volumes:
+  redis_data:
