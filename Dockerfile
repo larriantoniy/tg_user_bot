@@ -19,6 +19,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
+RUN ls -la
 RUN go build -o tg_user_bot .
 
 # Этап 3: Финальный рантайм-образ
