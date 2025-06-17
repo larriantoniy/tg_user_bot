@@ -37,4 +37,4 @@ COPY --from=tdlib-builder /tdlib/install/lib/libtdjson.so /usr/local/lib/
 COPY --from=go-builder /app/tg_user_bot /usr/local/bin/tg_user_bot
 
 ENV LD_LIBRARY_PATH="/usr/local/lib"
-CMD ["tg_user_bot"]
+CMD ["tg_user_bot"] 
