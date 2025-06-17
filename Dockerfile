@@ -20,7 +20,7 @@ RUN go mod download
 
 COPY . .
 RUN ls -la
-RUN go build -o tg_user_bot .
+RUN go build -o tg_user_bot ./cmd/userbot
 
 # Этап 3: Финальный рантайм-образ
 FROM ubuntu:22.04
