@@ -19,13 +19,13 @@ jobs:
           username: ${{ vars.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-             cd /home/deploy || exit 1        # путь до папки с проектом на сервере
-             if [ ! -d "tg_user_bot/.git" ]; then
-             git clone git@github.com:larriantoniy/tg_user_bot.git
-             else
-             cd tg_user_bot && git pull
-             fi 
-                                               # стягиваем последние изменения , или клонируем репозиторий при первом запуске    
+            cd /home/deploy || exit 1        # путь до папки с проектом на сервере
+            if [ ! -d "tg_user_bot/.git" ]; then
+            git clone git@github.com:larriantoniy/tg_user_bot.git
+            else
+            cd tg_user_bot && git pull
+            fi                          
+                                               
             docker compose down                # останавливаем старые контейнеры
             docker compose pull || true        # (если используете образы из реестра)
             docker compose up -d --build       # пересобираем образ и запускаем контейнеры
