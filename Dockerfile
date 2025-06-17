@@ -1,30 +1,33 @@
-# Этап 1: TDLib-builder
-FROM ubuntu:22.04 AS tdlib-builder
-
-ADD https://github.com/tdlib/td/releases/download/v1.8.0/libtdjson.so /usr/local/lib/
-
-# Этап 2: Go-сборка
+# Этап 1: Go-сборка
 FROM golang:1.21 AS go-builder
 WORKDIR /app
 
 COPY go.mod go.sum ./
 RUN go mod download
-# Копируем tdlib include
-COPY --from=tdlib-builder /tdlib/install/include /usr/local/include
 
 COPY . .
-ENV CGO_CFLAGS="-I/usr/local/include"
 
-RUN go build -o tg_user_bot ./cmd/userbot
+# Указание пути для заголовков TDLib (если потребуется)
+# ENV CGO_CFLAGS="-I/usr/local/include"
 
-# Этап 3: Финальный рантайм-образ
+# Компиляция Go-бинарника
+RUN go build -o telegram-bot ./cmd/userbot
+
+# Этап 2: Финальный рантайм-образ
 FROM ubuntu:22.04
 
+# Устанавливаем runtime-зависимости
 RUN apt-get update && apt-get install -y \
-    libssl3 zlib1g && rm -rf /var/lib/apt/lists/*
+    libssl3 zlib1g ca-certificates && rm -rf /var/lib/apt/lists/*
 
-COPY --from=tdlib-builder /tdlib/install/lib/libtdjson.so /usr/local/lib/
-COPY --from=go-builder /app/tg_user_bot /usr/local/bin/tg_user_bot
+# Добавляем предсобранную библиотеку TDLib
+ADD https://github.com/tdlib/td/releases/download/v1.8.0/libtdjson.so /usr/local/lib/libtdjson.so
 
+# Копируем Go-бинарник
+COPY --from=go-builder /app/telegram-bot /usr/local/bin/telegram-bot
+
+# Настраиваем путь поиска библиотек
 ENV LD_LIBRARY_PATH="/usr/local/lib"
-CMD ["tg_user_bot"]
+
+# Запуск бота
+CMD ["telegram-bot"]
