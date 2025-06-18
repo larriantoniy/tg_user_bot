@@ -7,7 +7,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
 
 RUN git clone --branch v1.8.0 --depth=1 https://github.com/tdlib/td.git /tdlib
 
-WORKDIR /tdlib/build
+WORKDIR /tdlib
 # Сборка TDLib с ограничением параллельности (уменьшаем нагрузку на VPS)
 
 RUN mkdir build && cd build && \
