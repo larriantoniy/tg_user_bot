@@ -1,23 +1,24 @@
-# Этап 1: TDLib-builder
 FROM ubuntu:22.04 AS tdlib-builder
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    build-essential cmake git gperf zlib1g-dev libssl-dev ca-certificates && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+    build-essential cmake git gperf zlib1g-dev libssl-dev ca-certificates php-cli && \
+    rm -rf /var/lib/apt/lists/*
 
 RUN git clone --branch v1.8.0 --depth=1 https://github.com/tdlib/td.git /tdlib
 
 WORKDIR /tdlib
-# Сборка TDLib с ограничением параллельности (уменьшаем нагрузку на VPS)
+RUN mkdir build install
 
-RUN mkdir build && cd build && \
-    cmake -DCMAKE_BUILD_TYPE=Release .. && \
+WORKDIR /tdlib/build
+RUN cmake -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_INSTALL_PREFIX=/tdlib/install .. && \
     cmake --build . --target prepare_cross_compiling && \
     cd .. && \
     php SplitSource.php && \
     cd build && \
     cmake --build . --target tdjson && \
     cmake --build . --target tdjson_static && \
+    cmake --build . --target install && \
     cd .. && \
     php SplitSource.php --undo
 # Этап 2: Go-сборка
