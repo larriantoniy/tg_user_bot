@@ -10,9 +10,16 @@ RUN git clone --branch v1.8.0 --depth=1 https://github.com/tdlib/td.git /tdlib
 WORKDIR /tdlib/build
 # Сборка TDLib с ограничением параллельности (уменьшаем нагрузку на VPS)
 
-RUN cmake -DCMAKE_BUILD_TYPE=RELEASE -DCMAKE_INSTALL_PREFIX=/usr/local .. && \
-    cmake --build . --target install
-
+RUN mkdir build && cd build && \
+    cmake -DCMAKE_BUILD_TYPE=Release .. && \
+    cmake --build . --target prepare_cross_compiling && \
+    cd .. && \
+    php SplitSource.php && \
+    cd build && \
+    cmake --build . --target tdjson && \
+    cmake --build . --target tdjson_static && \
+    cd .. && \
+    php SplitSource.php --undo
 # Этап 2: Go-сборка
 FROM golang:1.21 AS go-builder
 WORKDIR /app
