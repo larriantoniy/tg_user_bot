@@ -1,0 +1,34 @@
+name: Build and Push Docker Image   # CI/CD для образов
+
+on:
+  push:
+    branches: [ main ]              # триггер – пуш в main
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Checkout
+      - name: Checkout repository
+        uses: actions/checkout@v3         # действия/checkout для git-кода :contentReference[oaicite:7]{index=7}
+      - name: Extract Docker image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+            images: ${{ vars.DOCKER_USERNAME }}/tg_user_bot
+
+      # 2. Login to Registry
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3      # docker/login-action :contentReference[oaicite:8]{index=8}
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ vars.DOCKERHUB_TOKEN }}
+
+      # 3. Build and Push
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6  # docker/build-push-action с Buildx :contentReference[oaicite:9]{index=9}
+        with:
+          context: .
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          annotations: ${{ steps.meta.outputs.annotations }}
