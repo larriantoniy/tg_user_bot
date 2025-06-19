@@ -36,8 +36,7 @@ jobs:
             cd /home/deploy/tg_user_bot
 
             # Обновляем код
-            git fetch --all
-            git reset --hard origin/main
+            git pull
 
             # Логинимся в Docker Hub
             echo "$DOCKER_PASSWORD" | docker login \
