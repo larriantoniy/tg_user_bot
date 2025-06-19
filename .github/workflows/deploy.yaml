@@ -26,38 +26,38 @@ jobs:
           envs: |
             DOCKER_USERNAME=${{ vars.DOCKER_USERNAME }}
             DOCKER_PASSWORD=${{ secrets.DOCKER_PASSWORD }}
-        script: |
-          set -euo pipefail
+            script: |
+            set -euo pipefail
 
-          # Переходим в директорию проекта (создадим, если нет)
-          if [ ! -d /home/deploy/tg_user_bot ]; then
+            # Переходим в директорию проекта (создадим, если нет)
+            if [ ! -d /home/deploy/tg_user_bot ]; then
             git clone git@github.com:larriantoniy/tg_user_bot.git /home/deploy/tg_user_bot
-          fi
-          cd /home/deploy/tg_user_bot
+            fi
+            cd /home/deploy/tg_user_bot
 
-          # Обновляем код
-          git fetch --all
-          git reset --hard origin/main
+            # Обновляем код
+            git fetch --all
+            git reset --hard origin/main
 
-          # Логинимся в Docker Hub
-          echo "$DOCKER_PASSWORD" | docker login \
+            # Логинимся в Docker Hub
+            echo "$DOCKER_PASSWORD" | docker login \
             --username "$DOCKER_USERNAME" \
             --password-stdin
 
-          # Тянем свежие образы
-          docker compose pull
+            # Тянем свежие образы
+            docker compose pull
 
-          # Останавливаем и удаляем старые контейнеры
-          docker compose down
+            # Останавливаем и удаляем старые контейнеры
+            docker compose down
 
-          # Запускаем сервисы заново (без билда)
-          docker compose up -d --no-build
+            # Запускаем сервисы заново (без билда)
+            docker compose up -d --no-build
 
-          # Инициализируем RediSearch
-          docker compose exec redis bash -c '
+            # Инициализируем RediSearch
+            docker compose exec redis bash -c '
             until redis-cli ping | grep -q PONG; do
-              echo "Ждём Redis..."
-              sleep 2
+            echo "Ждём Redis..."
+            sleep 2
             done
             bash /scripts/init_redis_search.sh
-          '
+            '
