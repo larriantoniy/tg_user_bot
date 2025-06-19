@@ -7,7 +7,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
 WORKDIR tdlib/
 RUN rm -rf /tdlib/*        # очистка содержимого, если оно есть :contentReference[oaicite:10]{index=10}
 
-RUN git clone --branch v1.8.0 --depth=1 https://github.com/tdlib/td.git .
+RUN git clone --branch v1.8.3 --depth=1 https://github.com/tdlib/td.git .
 
 WORKDIR /tdlib/build
 RUN cmake -DCMAKE_BUILD_TYPE=Release \
