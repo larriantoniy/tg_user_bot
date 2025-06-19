@@ -1,42 +1,70 @@
-# Сборка TDLib
+# 1) Сборка TDLib (shared libs)
 FROM ubuntu:22.04 AS tdlib-builder
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    build-essential cmake git gperf zlib1g-dev libssl-dev ca-certificates php-cli && \
-    rm -rf /var/lib/apt/lists/*
+# Устанавливаем зависимости для сборки TDLib
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends \
+      make \
+      git \
+      zlib1g-dev \
+      libssl-dev \
+      gperf \
+      php-cli \
+      cmake \
+      g++ \
+ && rm -rf /var/lib/apt/lists/*
 
-WORKDIR tdlib/
-RUN rm -rf /tdlib/*        # очистка содержимого, если оно есть :contentReference[oaicite:10]{index=10}
-
-RUN git clone --branch v1.8.0 --depth=1 https://github.com/tdlib/td.git .
+# Клонируем TDLib в пустую директорию
+WORKDIR /tdlib
+RUN rm -rf build            && \
+    git clone --branch v1.8.0 --depth=1 https://github.com/tdlib/td.git .  && \
+    mkdir build
 
 WORKDIR /tdlib/build
 RUN cmake -DCMAKE_BUILD_TYPE=Release \
-          -DCMAKE_INSTALL_PREFIX=/tdlib/install .. && \
-    cmake --build . --target prepare_cross_compiling && \
+          -DCMAKE_INSTALL_PREFIX:PATH=/usr/local \
+          .. && \
     cmake --build . --target install
 
-# 2) Сборка Go-приложения
+# 2) Сборка Go-приложения с динамической TDLib
 FROM golang:1.21 AS go-builder
+# Устанавливаем компилятор и dev-пакеты OpenSSL/zlib
 RUN apt-get update && apt-get install -y \
-      gcc g++ libssl-dev zlib1g-dev \
+      gcc \
+      g++ \
+      libssl-dev \
+      zlib1g-dev \
     && rm -rf /var/lib/apt/lists/*
-# Копируем библиотеки и заголовки из tdlib-builder
-COPY --from=tdlib-builder /tdlib/install/lib /usr/local/lib
+
+# Копируем из tdlib-builder только то, что нужно: shared libs + заголовки
+COPY --from=tdlib-builder /tdlib/install/lib     /usr/local/lib
 COPY --from=tdlib-builder /tdlib/install/include /usr/local/include
+
 WORKDIR /app
 COPY . .
-# Указываем CFLAGS и LDFLAGS для cgo
-ENV CGO_CFLAGS="-I/usr/local/include"
 
-ENV CGO_LDFLAGS="-Wl,-rpath,/tdlib/install/lib -L/tdlib/install/lib -ltdjson"
+# Официальная инструкция TDLib для динамической линковки:
+ENV CGO_CFLAGS="-I/usr/local/include"
+ENV CGO_LDFLAGS="-Wl,-rpath,/usr/local/lib \
+                 -L/usr/local/lib \
+                 -ltdjson"
+
+# Собираем Go-исполняемый файл
 RUN go build -o tg_user_bot ./cmd/userbot
 
 # 3) RUNTIME-образ
 FROM ubuntu:22.04
-RUN apt-get update && apt-get install -y libssl3 zlib1g && rm -rf /var/lib/apt/lists/*
-# Для динамической версии можно скопировать только .so:
+# Устанавливаем только то, что нужно для запуска динамических библиотек
+RUN apt-get update && apt-get install -y \
+      libssl3 \
+      zlib1g \
+      libstdc++6 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Копируем только динамическую библиотеку tdjson и бинарь
 COPY --from=tdlib-builder /tdlib/install/lib/libtdjson.so /usr/local/lib
-COPY --from=tdlib-builder /tdlib/install/include /usr/local/include
-COPY --from=go-builder /app/tg_user_bot /usr/local/bin/tg_user_bot
+COPY --from=go-builder   /app/tg_user_bot               /usr/local/bin/tg_user_bot
+
+# Чтобы бинарник мог найти libtdjson.so при запуске
 ENV LD_LIBRARY_PATH="/usr/local/lib"
+
 CMD ["tg_user_bot"]
