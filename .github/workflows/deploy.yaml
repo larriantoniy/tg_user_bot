@@ -30,7 +30,7 @@ jobs:
             docker compose down
 
             # Запускаем новые контейнеры в фоне
-            docker compose up -d
+            docker compose up -d --no-build
 
             # Инициализируем RediSearch (ждём, пока Redis станет готов)
             docker compose exec redis bash -c \
