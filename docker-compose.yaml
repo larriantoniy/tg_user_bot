@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   bot:
-    image: ${DOCKER_USERNAME}/tg_user_bot:latest                   # Собрать образ из Dockerfile в текущей директории
+    image: larrianton/tg_user_bot:latest                   # Собрать образ из Dockerfile в текущей директории
     container_name: tg-user-bot
     restart: unless-stopped
     environment:
