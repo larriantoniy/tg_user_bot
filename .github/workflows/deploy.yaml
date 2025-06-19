@@ -17,11 +17,19 @@ jobs:
           port:             ${{ secrets.VPS_PORT }}
           username:         ${{ vars.VPS_USER }}
           key:              ${{ secrets.VPS_SSH_KEY }}
+          docker_password:  ${{ secrets.DOCKER_PASSWORD }}
+          docker_username:  ${{ vars.DOCKER_USERNAME }}
+          telegram_api_id:  ${{ vars.DOCKER_USERNAME }}
           script: |
             set -e
-
-            # Переходим в директорию проекта
-            cd /home/deploy/tg_user_bot || exit 1
+            
+            cd /home/deploy/tg_user_bot || exit 1   # Переходим в директорию проекта
+            
+            # если папки нет — клонируем
+            if [ ! -d ~/telegram-bot-app ]; then
+            git clone git@github.com:larriantoniy/tg_user_bot.git ~/tg_user_bot
+            fi  
+            git pull
 
             # Выкачиваем свежий образ из реестра
             docker compose pull
