@@ -9,9 +9,12 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    concurrency:
+      group: deploy-vps
+      cancel-in-progress: true
     steps:
       - name: Деплой на сервер через SSH
-        uses: appleboy/ssh-action@v0.1.5
+        uses: appleboy/ssh-action@v1.2.2
         with:
           host:             ${{ secrets.VPS_HOST }}
           port:             ${{ secrets.VPS_PORT }}
@@ -19,11 +22,11 @@ jobs:
           key:              ${{ secrets.VPS_SSH_KEY }}
           docker_password:  ${{ secrets.DOCKER_PASSWORD }}
           docker_username:  ${{ vars.DOCKER_USERNAME }}
-          telegram_api_id:  ${{ vars.DOCKER_USERNAME }}
           script: |
             set -e
             
             cd /home/deploy/tg_user_bot || exit 1   # Переходим в директорию проекта
+            
             
             # если папки нет — клонируем
             if [ ! -d ~/tg_user_bot ]; then
@@ -31,16 +34,24 @@ jobs:
             fi  
             git pull
 
-            # Выкачиваем свежий образ из реестра
+          #  Логинимся в Docker Hub, чтобы docker compose pull
+          #    мог получить доступ к  image.
+          #    Токен передаётся через stdin, не окажется в логах.
+
+            echo "$DOCKER_PASSWORD" \
+            | docker login \
+            --username "$DOCKER_USERNAME" \
+            --password-stdin
+          # Выкачиваем свежий образ из реестра
             docker compose pull
 
-            # Останавливаем и удаляем старые контейнеры
+          # Останавливаем и удаляем старые контейнеры
             docker compose down
 
-            # Запускаем новые контейнеры в фоне
+          # Запускаем новые контейнеры в фоне
             docker compose up -d --no-build
 
-            # Инициализируем RediSearch (ждём, пока Redis станет готов)
+          # Инициализируем RediSearch (ждём, пока Redis станет готов)
             docker compose exec redis bash -c \
               'until redis-cli ping | grep -q PONG; do echo "Ждём Redis..."; sleep 2; done; \
                bash /scripts/init_redis_search.sh'
