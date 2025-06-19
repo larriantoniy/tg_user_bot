@@ -7,7 +7,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
 WORKDIR tdlib/
 RUN rm -rf /tdlib/*        # очистка содержимого, если оно есть :contentReference[oaicite:10]{index=10}
 
-RUN git clone --branch v1.8.30 --depth=1 https://github.com/tdlib/td.git .
+RUN git clone --branch v1.8.0 --depth=1 https://github.com/tdlib/td.git .
 
 WORKDIR /tdlib/build
 RUN cmake -DCMAKE_BUILD_TYPE=Release \
@@ -29,7 +29,7 @@ COPY . .
 # Указываем CFLAGS и LDFLAGS для cgo
 ENV CGO_CFLAGS="-I/usr/local/include"
 ENV CGO_LDFLAGS="-L/usr/local/lib \
-                 -ltdmtproto -ltdcore -ltdclient \
+                 -ltdcore -ltdclient \
                  -lssl -lcrypto -lz -ldl -pthread"
 RUN go build -o tg_user_bot ./cmd/userbot
 
