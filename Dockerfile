@@ -8,8 +8,6 @@ WORKDIR /tdlib
 
 RUN git clone --branch v1.8.0 --depth=1 https://github.com/tdlib/td.git .
 
-RUN mkdir build install
-
 WORKDIR /tdlib/build
 RUN cmake -DCMAKE_BUILD_TYPE=Release \
           -DCMAKE_INSTALL_PREFIX=/tdlib/install .. && \
