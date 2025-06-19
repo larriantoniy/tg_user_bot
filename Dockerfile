@@ -18,8 +18,7 @@ RUN cmake -DCMAKE_BUILD_TYPE=Release \
 # 2) Сборка Go-приложения
 FROM golang:1.21 AS go-builder
 RUN apt-get update && apt-get install -y \
-      gcc g++ ca-certificates \
-      libssl-dev zlib1g-dev \
+      gcc g++ libssl-dev zlib1g-dev \
     && rm -rf /var/lib/apt/lists/*
 # Копируем библиотеки и заголовки из tdlib-builder
 COPY --from=tdlib-builder /tdlib/install/lib /usr/local/lib
@@ -38,6 +37,7 @@ FROM ubuntu:22.04
 RUN apt-get update && apt-get install -y libssl3 zlib1g && rm -rf /var/lib/apt/lists/*
 # Для динамической версии можно скопировать только .so:
 COPY --from=tdlib-builder /tdlib/install/lib/libtdjson.so /usr/local/lib
+COPY --from=tdlib-builder /tdlib/install/include /usr/local/include
 COPY --from=go-builder /app/tg_user_bot /usr/local/bin/tg_user_bot
 ENV LD_LIBRARY_PATH="/usr/local/lib"
 CMD ["tg_user_bot"]
