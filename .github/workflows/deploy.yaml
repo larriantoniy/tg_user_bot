@@ -3,8 +3,10 @@ name: Deploy to VPS
 # Срабатывает после успешного завершения сборки и публикации образа
 on:
   workflow_run:
-    workflows: ["Build and Push Docker Image"]
-    types: [completed]
+    workflows:
+      - Build and Push Docker Image
+    types:
+      - completed
 
 jobs:
   deploy:
@@ -12,46 +14,50 @@ jobs:
     concurrency:
       group: deploy-vps
       cancel-in-progress: true
+
     steps:
-      - name: Деплой на сервер через SSH
+      - name: Deploy to VPS via SSH
         uses: appleboy/ssh-action@v1.2.2
         with:
-          host:             ${{ secrets.VPS_HOST }}
-          port:             ${{ secrets.VPS_PORT }}
-          username:         ${{ vars.VPS_USER }}
-          key:              ${{ secrets.VPS_SSH_KEY }}
-          docker_password:  ${{ secrets.DOCKER_PASSWORD }}
-          docker_username:  ${{ vars.DOCKER_USERNAME }}
-          script: |
-            set -e
-            
-            cd /home/deploy/tg_user_bot || exit 1   # Переходим в директорию проекта
-            
-            
-            # если папки нет — клонируем
-            if [ ! -d ~/tg_user_bot ]; then
-            git clone git@github.com:larriantoniy/tg_user_bot.git ~/tg_user_bot
-            fi  
-            git pull
+          host:     ${{ secrets.VPS_HOST }}
+          port:     ${{ secrets.VPS_PORT }}
+          username: ${{ vars.VPS_USER }}
+          key:      ${{ secrets.VPS_SSH_KEY }}
+          envs: |
+            DOCKER_USERNAME=${{ vars.DOCKER_USERNAME }}
+            DOCKER_PASSWORD=${{ secrets.DOCKER_PASSWORD }}
+        script: |
+          set -euo pipefail
 
-          #  Логинимся в Docker Hub, чтобы docker compose pull
-          #    мог получить доступ к  image.
-          #    Токен передаётся через stdin, не окажется в логах.
+          # Переходим в директорию проекта (создадим, если нет)
+          if [ ! -d /home/deploy/tg_user_bot ]; then
+            git clone git@github.com:larriantoniy/tg_user_bot.git /home/deploy/tg_user_bot
+          fi
+          cd /home/deploy/tg_user_bot
 
-            echo "$DOCKER_PASSWORD" \
-            | docker login \
+          # Обновляем код
+          git fetch --all
+          git reset --hard origin/main
+
+          # Логинимся в Docker Hub
+          echo "$DOCKER_PASSWORD" | docker login \
             --username "$DOCKER_USERNAME" \
             --password-stdin
-          # Выкачиваем свежий образ из реестра
-            docker compose pull
+
+          # Тянем свежие образы
+          docker compose pull
 
           # Останавливаем и удаляем старые контейнеры
-            docker compose down
+          docker compose down
 
-          # Запускаем новые контейнеры в фоне
-            docker compose up -d --no-build
+          # Запускаем сервисы заново (без билда)
+          docker compose up -d --no-build
 
-          # Инициализируем RediSearch (ждём, пока Redis станет готов)
-            docker compose exec redis bash -c \
-              'until redis-cli ping | grep -q PONG; do echo "Ждём Redis..."; sleep 2; done; \
-               bash /scripts/init_redis_search.sh'
+          # Инициализируем RediSearch
+          docker compose exec redis bash -c '
+            until redis-cli ping | grep -q PONG; do
+              echo "Ждём Redis..."
+              sleep 2
+            done
+            bash /scripts/init_redis_search.sh
+          '
