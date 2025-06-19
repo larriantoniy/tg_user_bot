@@ -4,7 +4,6 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     build-essential cmake git gperf zlib1g-dev libssl-dev ca-certificates php-cli && \
     rm -rf /var/lib/apt/lists/* \
 
-WORKDIR /tdlib
 
 RUN git clone --branch v1.8.0 --depth=1 https://github.com/tdlib/td.git .
 
