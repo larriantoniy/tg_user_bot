@@ -26,7 +26,7 @@ jobs:
             cd /home/deploy/tg_user_bot || exit 1   # Переходим в директорию проекта
             
             # если папки нет — клонируем
-            if [ ! -d ~/telegram-bot-app ]; then
+            if [ ! -d ~/tg_user_bot ]; then
             git clone git@github.com:larriantoniy/tg_user_bot.git ~/tg_user_bot
             fi  
             git pull
