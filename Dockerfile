@@ -27,9 +27,8 @@ WORKDIR /app
 COPY . .
 # Указываем CFLAGS и LDFLAGS для cgo
 ENV CGO_CFLAGS="-I/usr/local/include"
-ENV CGO_LDFLAGS="-L/usr/local/lib \
-                 -ltdcore -ltdclient \
-                 -lssl -lcrypto -lz -ldl -pthread"
+
+ENV CGO_LDFLAGS="-Wl,-rpath,/tdlib/install/lib -L/tdlib/install/lib -ltdjson"
 RUN go build -o tg_user_bot ./cmd/userbot
 
 # 3) RUNTIME-образ
