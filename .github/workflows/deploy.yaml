@@ -37,14 +37,13 @@ jobs:
 
             # Тянем свежие образы
             docker compose pull
-            docker compose config
+      
 
             # Останавливаем и удаляем старые контейнеры
             docker compose down
 
             # Запускаем сервисы заново (без билда)
-            docker compose up -d --no-build
-            docker compose logs --follow --tail=100
+            docker compose up --no-build
 
             # Инициализируем RediSearch
             docker compose exec redis bash -c '
