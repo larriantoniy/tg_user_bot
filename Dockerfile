@@ -41,8 +41,8 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Копируем из tdlib-builder только то, что нужно: shared libs + заголовки
-COPY --from=tdlib-builder /tdlib/install/lib     /usr/local/lib
-COPY --from=tdlib-builder /tdlib/install/include /usr/local/include
+COPY --from=tdlib-builder /usr/local/lib     /usr/local/lib
+COPY --from=tdlib-builder /usr/local/include /usr/local/include
 
 WORKDIR /app
 COPY . .
