@@ -66,7 +66,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Копируем только динамическую библиотеку tdjson и бинарь
-COPY --from=tdlib-builder /tdlib/install/lib/libtdjson.so /usr/local/lib
+COPY --from=tdlib-builder /usr/local/lib/libtdjson.so /usr/local/lib
 COPY --from=go-builder   /app/tg_user_bot               /usr/local/bin/tg_user_bot
 
 # Чтобы бинарник мог найти libtdjson.so при запуске
