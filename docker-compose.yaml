@@ -16,7 +16,7 @@ services:
     volumes:
       - ./session:/app  # каталог, где Telethon пишет your_session.session
   redis:
-    image: redis/redis-stack-server:latest   # Redis Stack (включает RediSearch)
+    image: redis/redis-stack-server:latest  # Redis Stack (включает RediSearch)
     container_name: redis
     restart: unless-stopped
     ports:
