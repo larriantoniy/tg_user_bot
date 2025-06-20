@@ -1,3 +1,5 @@
+# syntax=docker/dockerfile:1
+
 # 1) Сборка TDLib (shared libs)
 FROM ubuntu:22.04 AS tdlib-builder
 # Чтобы установка php-cli (и tzdata) не останавливала сборку на выбор часового пояса
@@ -6,6 +8,7 @@ ENV TZ=Etc/UTC
 # Устанавливаем зависимости для сборки TDLib
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
+      ccache \
       ca-certificates \
       make \
       git \
@@ -26,6 +29,7 @@ RUN rm -rf /tdlib/*          && \
 
 WORKDIR /tdlib/build
 RUN --mount=type=cache,target=/tdlib/build \
+    --mount=type=cache,target=/root/.ccache \
     cmake -DCMAKE_BUILD_TYPE=Release \
           -DCMAKE_INSTALL_PREFIX:PATH=/usr/local \
           .. && \
