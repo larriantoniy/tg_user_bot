@@ -35,3 +35,4 @@ jobs:
           cache-from: type=gha,local=/tmp/.buildx-cache
           cache-to: type=gha,mode=max,local=/tmp/.buildx-cache
           push: true
+          tags: ${{ vars.DOCKER_USERNAME }}/tg_user_bot:${{ github.ref_name }}
