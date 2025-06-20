@@ -23,7 +23,8 @@ jobs:
           port:     ${{ secrets.VPS_PORT }}
           username: ${{ vars.VPS_USER }}
           key:      ${{ secrets.VPS_SSH_KEY }}
-
+          telegram_api_id:   ${{ secrets.TELEGRAM_API_ID }}
+          telegram_api_hash:   ${{ secrets.TELEGRAM_API_HASH }}
           script: |
             set -euo pipefail
 
