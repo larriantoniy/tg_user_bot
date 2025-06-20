@@ -6,6 +6,7 @@ ENV TZ=Etc/UTC
 # Устанавливаем зависимости для сборки TDLib
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
+      ca-certificates \
       make \
       git \
       zlib1g-dev \
@@ -14,7 +15,8 @@ RUN apt-get update \
       php-cli \
       cmake \
       g++ \
- && rm -rf /var/lib/apt/lists/*
+      && update-ca-certificates \
+      && rm -rf /var/lib/apt/lists/*
 
 # Клонируем TDLib в пустую директорию
 WORKDIR /tdlib
