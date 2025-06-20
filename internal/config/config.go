@@ -77,6 +77,5 @@ func fetchConfigPath() string {
 	if res == "" {
 		res = os.Getenv("CONFIG_PATH")
 	}
-
 	return res
 }
