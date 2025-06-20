@@ -8,7 +8,6 @@ services:
     environment:
       - TELEGRAM_API_ID=${TELEGRAM_API_ID}
       - TELEGRAM_API_HASH=${TELEGRAM_API_HASH}
-      - REDIS_ADDR=redis:6379
       # ...другие переменные окружения при необходимости (см. ниже)
     depends_on:
       - redis
