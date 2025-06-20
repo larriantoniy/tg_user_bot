@@ -83,4 +83,4 @@ COPY --from=go-builder /app/config/dev.yaml /etc/tg_user_bot/dev.yaml
 
 # Чтобы бинарник мог найти libtdjson.so при запуске
 ENV LD_LIBRARY_PATH="/usr/local/lib"
-CMD ["tg_user_bot", "-config", "/etc/tg_user_bot/dev.yaml"]
+CMD ["tg_user_bot", "-config", "etc/tg_user_bot/dev.yaml"]
