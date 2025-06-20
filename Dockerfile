@@ -18,7 +18,7 @@ RUN apt-get update \
 
 # Клонируем TDLib в пустую директорию
 WORKDIR /tdlib
-RUN rm -rf build            && \
+RUN rm -rf /tdlib/*          && \
     git clone --branch v1.8.0 --depth=1 https://github.com/tdlib/td.git .  && \
     mkdir build
 
