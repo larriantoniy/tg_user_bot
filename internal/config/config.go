@@ -40,8 +40,14 @@ func Load() (*Config, error) {
 
 	channels := strings.Split(channelsStr, ",")
 
-	return &Config{APIID: apiID32, APIHash: apiHash, Channels: channels, RedisAddr: cfg.RedisAddr,
-		RedisDB: cfg.RedisDB}, nil
+	return &Config{
+		APIID:      apiID32,
+		APIHash:    apiHash,
+		Channels:   channels,
+		ServerAddr: cfg.ServerAddr, // <— добавили
+		Env:        cfg.Env,        // <— добавили
+		RedisAddr:  cfg.RedisAddr,
+		RedisDB:    cfg.RedisDB}, nil
 }
 
 func MustLoadPath(configPath string) *Config {
