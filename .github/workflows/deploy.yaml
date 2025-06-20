@@ -44,7 +44,7 @@ jobs:
 
             # Запускаем сервисы заново (без билда)
             docker compose up --no-build
-
+            docker ps
             # Инициализируем RediSearch
             docker compose exec redis bash -c '
             until redis-cli ping | grep -q PONG; do
