@@ -68,8 +68,12 @@ RUN apt-get update && apt-get install -y \
       libstdc++6 \
     && rm -rf /var/lib/apt/lists/*
 
-# Копируем только динамическую библиотеку tdjson и бинарь
-COPY --from=tdlib-builder /usr/local/lib/libtdjson.so /usr/local/lib
+# Копируем все артефакты libtdjson с их версионными именами
+COPY --from=tdlib-builder /usr/local/lib/libtdjson* /usr/local/lib/
+
+# Обновляем кеш динамического линковщика
+RUN ldconfig
+
 COPY --from=go-builder   /app/tg_user_bot               /usr/local/bin/tg_user_bot
 
 # Чтобы бинарник мог найти libtdjson.so при запуске
