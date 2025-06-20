@@ -14,7 +14,7 @@ type Config struct {
 	APIID      int32
 	APIHash    string
 	Channels   []string
-	ServerAddr string `env:"server_addr" env-required:"true"`
+	ServerAddr string `env:"server" env-required:"true"`
 	Env        string `env:"env" env-required:"true"`
 	RedisAddr  string `env:"redis_addr" env-required:"true"`
 	RedisDB    int    `env:"redis_db" env-default:"0"`
