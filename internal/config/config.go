@@ -57,7 +57,7 @@ func MustLoadPath(configPath string) *Config {
 	}
 
 	var cfg Config
-
+	///
 	fmt.Println("CONFIG PATH MUST LOAD", configPath)
 
 	if err := cleanenv.ReadConfig(configPath, &cfg); err != nil {
