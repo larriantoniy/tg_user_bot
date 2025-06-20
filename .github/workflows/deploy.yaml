@@ -26,11 +26,6 @@ jobs:
           script: |
             set -euo pipefail
             
-            # Переменные среды для приложения
-            export TELEGRAM_API_ID=${{ secrets.TELEGRAM_API_ID }}
-            export TELEGRAM_API_HASH=${{ secrets.TELEGRAM_API_HASH }}
-            export DOCKER_USERNAME=${{ vars.DOCKER_USERNAME }}
-            
             # Переходим в директорию проекта (создадим, если нет)
             if [ ! -d /home/deploy/tg_user_bot ]; then
             git clone git@github.com:larriantoniy/tg_user_bot.git /home/deploy/tg_user_bot
