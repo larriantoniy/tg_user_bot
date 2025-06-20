@@ -75,7 +75,7 @@ COPY --from=tdlib-builder /usr/local/lib/libtdjson* /usr/local/lib/
 RUN ldconfig
 
 COPY --from=go-builder   /app/tg_user_bot               /usr/local/bin/tg_user_bot
-COPY --from=go-builder   /app/tg_user_bot/config/dev.yaml             /usr/local/bin/tg_user_bot/config/dev.yaml
+COPY --from=go-builder   /app/tg_user_bot/config/dev.yaml             /config/dev.yaml
 
 # Чтобы бинарник мог найти libtdjson.so при запуске
 ENV LD_LIBRARY_PATH="/usr/local/lib"
