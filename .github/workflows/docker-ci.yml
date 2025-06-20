@@ -1,4 +1,4 @@
-name: Build and Push Docker Image   # CI/CD для образов
+name: Build and Push With Cache   # CI/CD для образов
 
 on:
   push:
@@ -28,7 +28,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       # 3. Build and Push
-      - name: Build and push with cache
+      - name: Build and push
         uses: docker/build-push-action@v6
         with:
           context: .
