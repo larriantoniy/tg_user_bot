@@ -79,7 +79,7 @@ COPY --from=go-builder   /app/tg_user_bot               /usr/local/bin/tg_user_b
 RUN mkdir -p /etc/tg_user_bot
 
 # копируем туда файл dev.yaml
-COPY --from=go-builder /app/tg_user_bot/config/dev.yaml /etc/tg_user_bot/dev.yaml
+COPY --from=go-builder /app/config/dev.yaml /etc/tg_user_bot/dev.yaml
 
 # Чтобы бинарник мог найти libtdjson.so при запуске
 ENV LD_LIBRARY_PATH="/usr/local/lib"
