@@ -49,10 +49,10 @@ COPY . .
 
 # Официальная инструкция TDLib для динамической линковки:
 ENV CGO_CFLAGS="-I/usr/local/include"
-ENV CGO_LDFLAGS="-Wl,-rpath,/usr/local/lib \
-                 -L/usr/local/lib \
-                 -ltdjson"
-
+ENV CGO_LDFLAGS="-L/usr/local/lib \
+  -ltdjson_static -ltdjson_private -ltdclient -ltdcore \
+  -ltdapi -ltdactor -ltdutils -ltdnet -ltdsqlite -ltddb \
+  -lstdc++ -lssl -lcrypto -lz -ldl -lpthread"
 # Собираем Go-исполняемый файл
 RUN go build -o tg_user_bot ./cmd/userbot
 
