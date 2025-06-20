@@ -25,7 +25,8 @@ RUN rm -rf /tdlib/*          && \
     mkdir build
 
 WORKDIR /tdlib/build
-RUN cmake -DCMAKE_BUILD_TYPE=Release \
+RUN --mount=type=cache,target=/tdlib/build \
+    cmake -DCMAKE_BUILD_TYPE=Release \
           -DCMAKE_INSTALL_PREFIX:PATH=/usr/local \
           .. && \
     cmake --build . --target install
