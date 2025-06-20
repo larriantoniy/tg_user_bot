@@ -43,7 +43,7 @@ jobs:
             docker compose down
 
             # Запускаем сервисы заново (без билда)
-            docker compose up --no-build
+            docker compose up
             docker ps
             # Инициализируем RediSearch
             docker compose exec redis bash -c '
