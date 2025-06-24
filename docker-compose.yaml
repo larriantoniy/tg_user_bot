@@ -4,6 +4,8 @@ services:
     image: ${DOCKER_USERNAME}/tg_user_bot:main
     container_name: tg-user-bot
     restart: unless-stopped
+    ports:
+      - "7230:7230"
     env_file:
       - .env
       #  переменные окружения при необходимости (см. ниже)

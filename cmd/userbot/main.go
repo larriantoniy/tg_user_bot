@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	redisrepo "github.com/larriantoniy/tg_user_bot/internal/adapters/redis"
 	"github.com/larriantoniy/tg_user_bot/internal/adapters/tdlib"
@@ -41,9 +42,12 @@ func main() {
 	// Запускаем HTTP сервер в горутине:
 	go func() {
 		logger.Info("HTTP server starting", "addr", cfg.ServerAddr)
-		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			logger.Error("HTTP server error", "err", err)
-			os.Exit(1)
+		if err := server.ListenAndServe(); err != nil {
+			if !errors.Is(err, http.ErrServerClosed) {
+				logger.Error("HTTP server error", "err", err)
+				os.Exit(1)
+			}
+			logger.Info("HTTP server closed")
 		}
 	}()
 
@@ -52,6 +56,7 @@ func main() {
 		logger.Error("TDLib init failed", "error", err)
 		os.Exit(1)
 	}
+	tdClient.JoinChannels(cfg.Channels)
 
 	for {
 		updates, err := tdClient.Listen()
