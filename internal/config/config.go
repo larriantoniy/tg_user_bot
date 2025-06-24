@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/ilyakaznacheev/cleanenv"
+	"github.com/joho/godotenv"
 	"os"
 	"strconv"
 	"strings"
@@ -22,6 +23,10 @@ type Config struct {
 
 // Load читает настройки из переменных окружения
 func Load() (*Config, error) {
+	err := godotenv.Load("/home/deploy/tg_user_bot/.env")
+	if err != nil {
+		return nil, fmt.Errorf("Переменные окружения не загружены  по пути /home/deploy/tg_user_bot/.env ")
+	}
 	path := fetchConfigPath()
 	cfg := MustLoadPath(path)
 	apiIDStr := os.Getenv("TELEGRAM_API_ID")
