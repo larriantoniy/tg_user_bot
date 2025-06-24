@@ -13,7 +13,8 @@ services:
     stdin_open: true   # открыть STDIN
     tty: true          # выделить TTY для взаимодействия
     volumes:
-      - ./session:/app  # каталог, где Telethon пишет your_session.session
+      - tdlib_db_data:/tdlib-db
+      - tdlib_files_data:/tdlib-files
   redis:
     image: redis/redis-stack-server:latest  # Redis Stack (включает RediSearch)
     container_name: redis
