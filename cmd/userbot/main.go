@@ -20,7 +20,12 @@ const (
 
 func main() {
 	cfg, _ := config.Load()
-	fmt.Println("env", cfg.Env)
+	cfg, err := config.Load()
+	if err != nil {
+		// либо log.Fatalf, либо panic с читаемым сообщением
+		fmt.Fprintf(os.Stderr, "ошибка загрузки конфига: %v\n", err)
+		os.Exit(1)
+	}
 	logger := setupLogger(cfg.Env)
 
 	rdb := redisrepo.NewPredictionRepo(cfg.RedisAddr, "", cfg.RedisDB, logger)
