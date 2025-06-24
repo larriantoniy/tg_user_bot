@@ -24,8 +24,9 @@ jobs:
           username: ${{ vars.VPS_USER }}
           key:      ${{ secrets.VPS_SSH_KEY }}
           script: |
+            sudo apt-get clean
             set -euo pipefail
-            
+        
             # Переходим в директорию проекта (создадим, если нет)
             if [ ! -d /home/deploy/tg_user_bot ]; then
             git clone git@github.com:larriantoniy/tg_user_bot.git /home/deploy/tg_user_bot
