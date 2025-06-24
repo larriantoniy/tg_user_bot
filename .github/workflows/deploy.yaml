@@ -26,7 +26,7 @@ jobs:
           script: |
             sudo apt-get clean
             set -euo pipefail
-            echo "=== Current environment variables on VPS ==="     
+            echo "=== Current environment variables on VPS ==="    
             echo "TELEGRAM_API_ID=$TELEGRAM_API_ID"
             echo "TELEGRAM_API_HASH=$TELEGRAM_API_HASH"
             echo "CHANNELS=$CHANNELS"
@@ -51,7 +51,12 @@ jobs:
 
             # Запускаем сервисы заново (без билда)
             docker compose up --no-build
-            docker ps
+            docker compose exec bot sh -c '
+            set +u
+            echo "TELEGRAM_API_ID=${TELEGRAM_API_ID:-<not set>}"
+            echo "TELEGRAM_API_HASH=${TELEGRAM_API_HASH:-<not set>}"
+            set -u
+                  '
             # Инициализируем RediSearch
             docker compose exec redis bash -c '
             until redis-cli ping | grep -q PONG; do
