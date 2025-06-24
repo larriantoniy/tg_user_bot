@@ -41,6 +41,7 @@ jobs:
 
             # Останавливаем и удаляем старые контейнеры
             docker compose down
+            docker container prune -f
 
             # Запускаем сервисы заново (без билда)
             docker compose up --no-build
