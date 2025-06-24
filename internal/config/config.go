@@ -25,7 +25,7 @@ type Config struct {
 func Load() (*Config, error) {
 	err := godotenv.Load()
 	if err != nil {
-		return nil, fmt.Errorf("Error loading .env file")
+		return nil, fmt.Errorf("error loading .env file %w", err)
 	}
 	path := fetchConfigPath()
 	cfg := MustLoadPath(path)
