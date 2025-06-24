@@ -27,3 +27,5 @@ services:
 
 volumes:
   redis_data:
+  tdlib_db_data:
+  tdlib_files_data:
