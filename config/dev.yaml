@@ -1,3 +1,3 @@
 env: dev
-redis_addr: localhost:6379
+redis_addr: redis:6379
 server: 0.0.0.0:7230
