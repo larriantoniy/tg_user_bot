@@ -26,11 +26,9 @@ jobs:
           script: |
             sudo apt-get clean
             set -euo pipefail
-            echo "=== Current environment variables on VPS ==="    
-            echo "TELEGRAM_API_ID=$TELEGRAM_API_ID"
-            echo "TELEGRAM_API_HASH=$TELEGRAM_API_HASH"
-            echo "CHANNELS=$CHANNELS"
-            echo "==========================================="
+           
+         
+    
             # Переходим в директорию проекта (создадим, если нет)
             if [ ! -d /home/deploy/tg_user_bot ]; then
             git clone git@github.com:larriantoniy/tg_user_bot.git /home/deploy/tg_user_bot
@@ -52,10 +50,13 @@ jobs:
             # Запускаем сервисы заново (без билда)
             docker compose up --no-build
             docker compose exec bot sh -c '
+            echo "=== Current environment variables on VPS ==="    
             set +u
-            echo "TELEGRAM_API_ID=${TELEGRAM_API_ID:-<not set>}"
-            echo "TELEGRAM_API_HASH=${TELEGRAM_API_HASH:-<not set>}"
+            echo "TELEGRAM_API_ID=$TELEGRAM_API_ID"
+            echo "TELEGRAM_API_HASH=$TELEGRAM_API_HASH"
+            echo "CHANNELS=$CHANNELS"
             set -u
+            echo "==========================================="
                   '
             # Инициализируем RediSearch
             docker compose exec redis bash -c '
