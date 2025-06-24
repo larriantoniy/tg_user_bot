@@ -50,7 +50,7 @@ jobs:
             # Запускаем сервисы заново (без билда)
             docker compose up --no-build
             docker compose exec bot sh -c '
-            echo "=== Current environment variables on VPS ==="    
+            echo "=== Current environment variable on VPS ==="    
             set +u
             echo "TELEGRAM_API_ID=$TELEGRAM_API_ID"
             echo "TELEGRAM_API_HASH=$TELEGRAM_API_HASH"
