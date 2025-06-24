@@ -35,6 +35,8 @@ jobs:
 
             # Обновляем код
             git pull
+            # Подхватить переменные из .env
+            export $(grep -v '^#' .env | xargs)
 
             # Тянем свежие образы
             docker compose pull
