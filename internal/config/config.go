@@ -14,10 +14,10 @@ type Config struct {
 	APIID      int32
 	APIHash    string
 	Channels   []string
-	ServerAddr string `env:"server" env-required:"true"`
-	Env        string `env:"env" env-required:"true"`
-	RedisAddr  string `env:"redis_addr" env-required:"true"`
-	RedisDB    int    `env:"redis_db" env-default:"0"`
+	ServerAddr string `yaml:"server" env-required:"true"`
+	Env        string `yaml:"env" env-required:"true"`
+	RedisAddr  string `yaml:"redis_addr" env-required:"true"`
+	RedisDB    int    `yaml:"redis_db" env-default:"0"`
 }
 
 // Load читает настройки из переменных окружения
