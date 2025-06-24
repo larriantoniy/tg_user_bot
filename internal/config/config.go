@@ -23,9 +23,9 @@ type Config struct {
 
 // Load читает настройки из переменных окружения
 func Load() (*Config, error) {
-	err := godotenv.Load("/home/deploy/tg_user_bot/.env")
+	err := godotenv.Load()
 	if err != nil {
-		return nil, fmt.Errorf("Переменные окружения не загружены  по пути /home/deploy/tg_user_bot/.env ")
+		fmt.Errorf("Error loading .env file")
 	}
 	path := fetchConfigPath()
 	cfg := MustLoadPath(path)
