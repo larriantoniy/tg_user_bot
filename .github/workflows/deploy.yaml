@@ -48,7 +48,7 @@ jobs:
             docker container prune -f
 
             # Запускаем сервисы заново (без билда)
-            docker compose up --no-build
+            docker compose up -d --no-build
             docker compose exec bot sh -c '
             echo "=== Current environment variable on VPS ==="    
             set +u
@@ -66,3 +66,5 @@ jobs:
             done
             bash /scripts/init_redis_search.sh
             '
+            # Явно завершаем скрипт с успешным статусом
+            exit 0

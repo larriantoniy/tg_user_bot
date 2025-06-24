@@ -29,7 +29,11 @@ func NewClient(apiID int32, apiHash string, logger *slog.Logger) (ports.Telegram
 		DatabaseDirectory:  "./tdlib-db",
 		FilesDirectory:     "./tdlib-files",
 	}
-
+	if _, err := client.SetLogVerbosityLevel(&client.SetLogVerbosityLevelRequest{
+		NewVerbosityLevel: 1,
+	}); err != nil {
+		logger.Error("TDLib SetLogVerbosity level", "error", err)
+	}
 	// Авторизатор и CLI-интерактор
 	authorizer := client.ClientAuthorizer(tdParams)
 	go client.CliInteractor(authorizer)
