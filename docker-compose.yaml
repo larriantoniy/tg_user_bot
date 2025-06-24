@@ -4,10 +4,9 @@ services:
     image: ${DOCKER_USERNAME}/tg_user_bot:main
     container_name: tg-user-bot
     restart: unless-stopped
-    environment:
-      - TELEGRAM_API_ID=${TELEGRAM_API_ID}
-      - TELEGRAM_API_HASH=${TELEGRAM_API_HASH}
-      # ...другие переменные окружения при необходимости (см. ниже)
+    env_file:
+      - .env
+      #  переменные окружения при необходимости (см. ниже)
     depends_on:
       - redis
     # Для первой авторизации Telegram юзер-бота:
