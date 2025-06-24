@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	redisrepo "github.com/larriantoniy/tg_user_bot/internal/adapters/redis"
 	"github.com/larriantoniy/tg_user_bot/internal/adapters/tdlib"
 	"github.com/larriantoniy/tg_user_bot/internal/config"
@@ -19,7 +20,9 @@ const (
 
 func main() {
 	cfg, _ := config.Load()
+	fmt.Println("env", cfg.Env)
 	logger := setupLogger(cfg.Env)
+
 	rdb := redisrepo.NewPredictionRepo(cfg.RedisAddr, "", cfg.RedisDB, logger)
 	ps := useCases.NewPredictionService(rdb, logger)
 	handler := delivery.NewHandler(ps)
