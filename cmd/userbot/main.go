@@ -19,7 +19,6 @@ const (
 )
 
 func main() {
-	cfg, _ := config.Load()
 	cfg, err := config.Load()
 	if err != nil {
 		// либо log.Fatalf, либо panic с читаемым сообщением
