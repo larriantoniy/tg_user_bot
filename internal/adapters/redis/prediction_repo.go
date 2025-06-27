@@ -98,6 +98,6 @@ func parseSearchResult(res interface{}) ([]domain.Prediction, error) {
 
 		preds = append(preds, p)
 	}
-
+	fmt.Println("Redis GET ALL predictions", "res", fmt.Sprintf("%s", res))
 	return preds, nil
 }
