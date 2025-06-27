@@ -18,6 +18,8 @@ type Config struct {
 	Env        string `yaml:"env" env-required:"true"`
 	RedisAddr  string `yaml:"redis_addr" env-required:"true"`
 	RedisDB    int    `yaml:"redis_db" env-default:"0"`
+	NeuroAddr  string `yaml:"neuro_addr" env-required:"true"`
+	NeuroToken string `yaml:"neuro_token" env-required:"true"`
 }
 
 // Load читает настройки из переменных окружения
@@ -27,9 +29,11 @@ func Load() (*Config, error) {
 	apiIDStr := os.Getenv("TELEGRAM_API_ID")
 	apiHash := os.Getenv("TELEGRAM_API_HASH")
 	channelsStr := os.Getenv("CHANNELS") // через запятую
+	neuroAddr := os.Getenv("NEURO_ADDR")
+	neuroToken := os.Getenv("NEURO_TOKEN") // через запятую
 
-	if apiIDStr == "" || apiHash == "" || channelsStr == "" {
-		return nil, fmt.Errorf("TELEGRAM_API_ID, TELEGRAM_API_HASH и CHANNELS должны быть заданы")
+	if apiIDStr == "" || apiHash == "" || channelsStr == "" || neuroAddr == "" || neuroToken == "" {
+		return nil, fmt.Errorf("TELEGRAM_API_ID, TELEGRAM_API_HASH, NEURO_ADDR,NEURO_TOKEN и CHANNELS должны быть заданы")
 	}
 
 	apiID, err := strconv.Atoi(apiIDStr)
@@ -47,7 +51,10 @@ func Load() (*Config, error) {
 		ServerAddr: cfg.ServerAddr, // <— добавили
 		Env:        cfg.Env,        // <— добавили
 		RedisAddr:  cfg.RedisAddr,
-		RedisDB:    cfg.RedisDB}, nil
+		RedisDB:    cfg.RedisDB,
+		NeuroAddr:  neuroAddr,
+		NeuroToken: neuroToken,
+	}, nil
 }
 
 func MustLoadPath(configPath string) *Config {
