@@ -87,7 +87,7 @@ func (t *TDLibClient) JoinChannels(chs []string) {
 	t.logger.Info("JoinChannels called", "channels", chs)
 
 	// 2) Получаем уже присоединённые
-	joinedChs, err := t.GetJoinedChannels()
+	joinedChs, err := t.GetJoinedChannelIdentifiers()
 	if err != nil {
 		t.logger.Error("Failed to fetch joined channels, aborting", "error", err)
 		return
@@ -188,50 +188,49 @@ func (t *TDLibClient) IsChannelMember(username string) (bool, error) {
 	}
 }
 
-func (t *TDLibClient) GetJoinedChannels() (map[string]bool, error) {
-	t.logger.Info("GetJoinedChannels cals")
-	var (
-		// для первой страницы используем максимально возможный order
-		//@todo увеличить лимит через pagination
-		limit int32 = 200 // TDLib рекомендует не запрашивать >100–200 за раз
-	)
-	channels := make(map[string]bool)
+func (t *TDLibClient) GetJoinedChannelIdentifiers() (map[string]bool, error) {
+	const limit = 100 // сколько чатов максимум забрать за один запрос
+	identifiers := make(map[string]bool, limit)
 
-	for {
-		t.logger.Info("GetJoinedChannels range")
-		// 1) Получаем страницу чатов из основного списка (ChatListMain)
-		resp, err := t.client.GetChats(&client.GetChatsRequest{
-			ChatList: &client.ChatListMain{},
-			Limit:    limit,
+	// 1. Получаем первые `limit` чатов из основного списка
+	chatsResp, err := t.client.GetChats(&client.GetChatsRequest{
+		ChatList: &client.ChatListMain{},
+		Limit:    limit,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("GetChats failed: %w", err)
+	}
+
+	// 2. Для каждого chatID запрашиваем объект чата и собираем идентификаторы
+	for _, chatID := range chatsResp.ChatIds {
+		chat, err := t.client.GetChat(&client.GetChatRequest{
+			ChatId: chatID,
 		})
 		if err != nil {
-			t.logger.Error("GetChats failed", "error", err)
-			return nil, err
-		}
-		if len(resp.ChatIds) == 0 {
-			// больше страниц нет
-			break
+			t.logger.Error("GetChat failed", "chat_id", chatID, "error", err)
+			continue
 		}
 
-		// 2) Для каждого chatID запрашиваем полные данные и отбираем только каналы
-		for _, chatID := range resp.ChatIds {
-			chat, err := t.client.GetChat(&client.GetChatRequest{ChatId: chatID})
+		// 1) Если это супергрруппа с флагом канала — экспортим инвайт-ссылку
+		if sg, ok := chat.Type.(*client.ChatTypeSupergroup); ok && sg.IsChannel {
+			linkResp, err := t.client.GetChatInviteLink(&client.GetChatInviteLinkRequest{
+				ChatId: sg.SupergroupId,
+			})
 			if err != nil {
-				t.logger.Warn("GetChat failed, skipping", "chat_id", chatID, "chat title:", chat.Title, "error", err)
+				t.logger.Error("ExportChatInviteLink failed", "chat_id", chatID, "error", err)
 				continue
 			}
-			//Супергруппа (тип ChatTypeSupergroup с IsChannel=false) по умолчанию приватная, но может быть сделана публичной путём назначения username
-			//medium.com
-			//core.telegram.org
-			//Проверка приватности сводится к получению объекта Supergroup и проверке поля Username: если строка пуста — группа приватная, иначе — публичная
-			if sg, ok := chat.Type.(*client.ChatTypeSupergroup); ok && sg.IsChannel {
-				channels[chat.Title] = true
+			identifiers[linkResp.InviteLink] = true
+			continue
+		}
 
-			}
+		// иначе, если у чата есть публичный username — берём "@username"
+		if chat.Title != "" {
+			identifiers["@"+chat.Title] = true
 		}
 	}
 
-	return channels, nil
+	return identifiers, nil
 }
 
 func (t *TDLibClient) getChatTitle(chatID int64) (string, error) {
