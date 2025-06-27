@@ -225,8 +225,8 @@ func (t *TDLibClient) GetJoinedChannelIdentifiers() (map[string]bool, error) {
 		}
 
 		// иначе, если у чата есть публичный username — берём "@username"
-		if chat.Title != "" {
-			identifiers["@"+chat.Title] = true
+		if chat.Extra != "" {
+			identifiers["@"+chat.Extra] = true
 		}
 	}
 
