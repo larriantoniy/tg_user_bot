@@ -148,8 +148,10 @@ func (t *TDLibClient) Listen() (<-chan domain.Message, error) {
 				if err != nil {
 					t.logger.Error("Error process UpdateNewMessage msg content type", upd.Message.Content.MessageContentType())
 				}
+			} else {
+				t.logger.Debug("Skipping new message is not UpdateNewMessage Type")
 			}
-			t.logger.Debug("Skipping new message is not UpdateNewMessage Type")
+
 		}
 	}()
 
@@ -240,7 +242,6 @@ func (t *TDLibClient) GetJoinedChannelIdentifiers() (map[string]bool, error) {
 }
 
 func (t *TDLibClient) getChatTitle(chatID int64) (string, error) {
-
 	chat, err := t.client.GetChat(&client.GetChatRequest{
 		ChatId: chatID,
 	})
@@ -263,7 +264,7 @@ func (t *TDLibClient) processUpdateNewMessage(out chan domain.Message, upd *clie
 	case *client.MessagePhoto:
 		return t.processMessagePhoto(out, content, upd.Message.ChatId, chatName)
 	default:
-		t.logger.Debug("cant switch type update")
+		t.logger.Debug("cant switch type update , upd message content", upd.Message.Content)
 		return out, nil
 	}
 }
