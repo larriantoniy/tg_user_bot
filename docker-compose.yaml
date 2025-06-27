@@ -21,7 +21,16 @@ services:
     image: redis/redis-stack-server:latest  # Redis Stack (включает RediSearch)
     container_name: redis
     restart: unless-stopped
-    entrypoint: [ "sh", "-c", "/scripts/init_redis_search.sh && docker-entrypoint.sh redis-stack-server" ]
+    entrypoint:
+      - sh
+      - -c
+      - |
+        # дать права на исполнение
+        chmod +x /scripts/init_redis_search.sh && \
+        # запустить инициализацию
+        /scripts/init_redis_search.sh && \
+        # затем старт стандартного entrypoint Redis Stack
+        exec docker-entrypoint.sh redis-stack-server
     ports:
       - "6379:6379"
     volumes:
