@@ -47,6 +47,7 @@ jobs:
 
             # Запускаем сервисы заново (без билда)
             docker compose up --no-build
+            docker-compose logs -f redis
             docker compose exec bot sh -c '
             echo "=== Current environment variable on VPS ==="    
             set +u
@@ -56,13 +57,5 @@ jobs:
             set -u
             echo "==========================================="
                   '
-            # Инициализируем RediSearch
-            docker compose exec redis bash -c '
-            until redis-cli ping | grep -q PONG; do
-            echo "Ждём Redis..."
-            sleep 2
-            done
-            bash /scripts/init_redis_search.sh
-            '
             # Явно завершаем скрипт с успешным статусом
             exit 0

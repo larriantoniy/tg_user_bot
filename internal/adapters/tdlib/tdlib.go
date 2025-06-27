@@ -98,6 +98,7 @@ func (t *TDLibClient) JoinChannels(chs []string) {
 				t.logger.Info("Successfully joined channel", "channel", ch)
 			}
 		} else {
+			t.logger.Info("Invite link channel", ch)
 			if _, err := t.client.JoinChatByInviteLink(&client.JoinChatByInviteLinkRequest{
 				InviteLink: ch,
 			}); err != nil {
