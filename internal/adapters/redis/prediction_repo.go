@@ -66,6 +66,7 @@ func (r *PredictionRepo) GetAll() ([]domain.Prediction, error) {
 		r.logger.Error("Redis GET ALL predictions failed", "err", err)
 		return nil, err
 	}
+	r.logger.Info("Redis GET ALL predictions ", "res", res)
 	return parseSearchResult(res)
 }
 
