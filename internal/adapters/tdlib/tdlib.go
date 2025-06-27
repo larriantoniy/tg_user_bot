@@ -217,7 +217,7 @@ func (t *TDLibClient) GetJoinedChannelIdentifiers() (map[string]bool, error) {
 		case *client.ChatTypeSupergroup:
 			// a) если это именно канал — экспортируем invite link
 			if ct.IsChannel {
-				linkResp, err := t.client.CreateChatInviteLink(&client.CreateChatInviteLinkRequest{
+				linkResp, err := t.client.GetChatInviteLink(&client.GetChatInviteLinkRequest{
 					ChatId: chatID, // Важно: именно chatID, а не SupergroupId
 				})
 				if err != nil {
