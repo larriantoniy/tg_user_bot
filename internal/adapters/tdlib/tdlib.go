@@ -217,7 +217,7 @@ func (t *TDLibClient) GetJoinedChannelIdentifiers() (map[string]bool, error) {
 				sup, err := t.client.GetSupergroup(&client.GetSupergroupRequest{
 					SupergroupId: ct.SupergroupId,
 				})
-				if err == nil {
+				if err == nil && sup.Usernames.ActiveUsernames != nil {
 					for _, u := range sup.Usernames.ActiveUsernames {
 						identifiers["@"+u] = true
 						break
