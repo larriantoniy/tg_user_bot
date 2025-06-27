@@ -37,7 +37,7 @@ func (s *PredictionService) Save(msg *domain.Message) error {
 		RawText:   msg.Text,
 		Sport:     s.extractSport(msg.Text),
 		CreatedAt: time.Now()}
-	s.logger.Info("Saving prediction", pred)
+	s.logger.Info("Saving", "prediction", pred)
 	return s.repo.Save(pred)
 }
 

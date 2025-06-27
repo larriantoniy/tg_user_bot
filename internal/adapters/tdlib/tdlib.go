@@ -146,10 +146,10 @@ func (t *TDLibClient) Listen() (<-chan domain.Message, error) {
 			if upd, ok := update.(*client.UpdateNewMessage); ok {
 				_, err := t.processUpdateNewMessage(out, upd)
 				if err != nil {
-					t.logger.Error("Error process UpdateNewMessage msg content type", upd.Message.Content.MessageContentType())
+					t.logger.Error("Error process UpdateNewMessage msg content type", "upd MessageContentType", upd.Message.Content.MessageContentType())
 				}
 			} else {
-				t.logger.Debug("Skipping new message is not UpdateNewMessage Type", upd)
+				t.logger.Debug("Skipping update: not UpdateNewMessage", "update", update)
 			}
 
 		}
