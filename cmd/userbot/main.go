@@ -1,8 +1,10 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"github.com/larriantoniy/tg_user_bot/internal/adapters/neuro"
 	redisrepo "github.com/larriantoniy/tg_user_bot/internal/adapters/redis"
 	"github.com/larriantoniy/tg_user_bot/internal/adapters/tdlib"
 	"github.com/larriantoniy/tg_user_bot/internal/config"
@@ -30,6 +32,12 @@ func main() {
 
 	rdb := redisrepo.NewPredictionRepo(cfg.RedisAddr, "", cfg.RedisDB, logger)
 	ps := useCases.NewPredictionService(rdb, logger)
+	nr, err := neuro.NewNeuro(cfg, logger)
+	if err != nil {
+		logger.Error("Cant init New Neuro")
+		os.Exit(1)
+	}
+
 	handler := delivery.NewHandler(ps)
 	router := delivery.NewRouter(handler)
 	server := &http.Server{
@@ -68,7 +76,13 @@ func main() {
 
 		for msg := range updates {
 			logger.Info("New message", "chat_id", msg.ChatID, "text", msg.Text)
-			ps.Save(msg)
+			newMsg, err := nr.GetCompletion(context.Background(), &msg)
+			if err != nil {
+				logger.Error("GetCompletion err", err)
+			}
+			if ps.IsPrediction(newMsg.Text) {
+				ps.Save(newMsg)
+			}
 		}
 
 		logger.Warn("Listen exited — вероятно упало соединение, пробуем снова")

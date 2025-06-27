@@ -28,7 +28,7 @@ func NewPredictionService(repo ports.PredictionRepo, logger *slog.Logger) *Predi
 	}
 }
 
-func (s *PredictionService) Save(msg domain.Message) error {
+func (s *PredictionService) Save(msg *domain.Message) error {
 	s.logger.Info("Received message from chat:", msg.ChatName, "processing ...")
 	pred := &domain.Prediction{
 		ID:        uuid.New().String(),
