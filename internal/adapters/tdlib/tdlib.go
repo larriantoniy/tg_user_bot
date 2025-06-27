@@ -213,13 +213,11 @@ func (t *TDLibClient) GetJoinedChannelIdentifiers() (map[string]bool, error) {
 		// канал или супергруппа
 		case *client.ChatTypeSupergroup:
 			// получение публичного @username
-			if ct.IsChannel {
-				sup, err := t.client.GetSupergroup(&client.GetSupergroupRequest{
-					SupergroupId: ct.SupergroupId,
-				})
-				if err == nil && sup != nil && sup.Usernames != nil && sup.Usernames.ActiveUsernames != nil && len(sup.Usernames.ActiveUsernames) > 0 {
-					identifiers["@"+sup.Usernames.ActiveUsernames[0]] = true
-				}
+			sup, err := t.client.GetSupergroup(&client.GetSupergroupRequest{
+				SupergroupId: ct.SupergroupId,
+			})
+			if err == nil && sup != nil && sup.Usernames != nil && sup.Usernames.ActiveUsernames != nil && len(sup.Usernames.ActiveUsernames) > 0 {
+				identifiers["@"+sup.Usernames.ActiveUsernames[0]] = true
 			}
 		case *client.ChatTypePrivate:
 			usr, err := t.client.GetUser(&client.GetUserRequest{
