@@ -18,8 +18,8 @@ type Config struct {
 	Env        string `yaml:"env" env-required:"true"`
 	RedisAddr  string `yaml:"redis_addr" env-required:"true"`
 	RedisDB    int    `yaml:"redis_db" env-default:"0"`
-	NeuroAddr  string `yaml:"neuro_addr" env-required:"true"`
-	NeuroToken string `yaml:"neuro_token" env-required:"true"`
+	NeuroAddr  string
+	NeuroToken string
 }
 
 // Load читает настройки из переменных окружения
