@@ -22,7 +22,7 @@ services:
     container_name: redis
     restart: unless-stopped
     entrypoint:
-      - sh
+      - bash
       - -c
       - |
         # дать права на исполнение
