@@ -1,11 +1,15 @@
 package tdlib
 
 import (
+	"encoding/base64"
+	"fmt"
 	"github.com/larriantoniy/tg_user_bot/internal/domain"
 	"github.com/larriantoniy/tg_user_bot/internal/ports"
 	"github.com/zelenin/go-tdlib/client"
 	"log/slog"
+	"os"
 	"strings"
+	"time"
 )
 
 // TDLibClient реализует ports.TelegramClient через go-tdlib
@@ -235,20 +239,28 @@ func (t *TDLibClient) processUpdateNewMessage(out chan domain.Message, upd *clie
 }
 func (t *TDLibClient) processMessagePhoto(out chan domain.Message, msg *client.MessagePhoto, msgChatId int64, ChatName string) (<-chan domain.Message, error) {
 	var text string
-	photoFileIDs := make([]string, 0)
-	for _, size := range msg.Photo.Sizes {
-		if size.Photo.Remote != nil {
-			photoFileIDs = append(photoFileIDs, size.Photo.Remote.Id)
+
+	var photoFile string
+
+	var best *client.PhotoSize
+	for i, size := range msg.Photo.Sizes {
+		if i == 0 || size.Width*size.Height > best.Width*best.Height {
+			best = size
+			photoFile = best.Photo.Remote.Id
 		}
+	}
+	if best == nil {
+		return nil, fmt.Errorf("no photo sizes available")
 	}
 	if msg.Caption != nil {
 		text = msg.Caption.Text
 	}
+
 	out <- domain.Message{
-		ChatID:       msgChatId,
-		Text:         text,
-		ChatName:     ChatName,
-		PhotoFileIds: photoFileIDs,
+		ChatID:    msgChatId,
+		Text:      text,
+		ChatName:  ChatName,
+		PhotoFile: photoFile,
 	}
 	return out, nil
 }
@@ -259,4 +271,37 @@ func (t *TDLibClient) processMessageText(out chan domain.Message, msg *client.Me
 		ChatName: ChatName,
 	}
 	return out, nil
+}
+
+func (t *TDLibClient) GetPhotoBase64ById(photoId string) (string, error) {
+	// 1. Регистрируем remote ID и получаем локальный file ID
+	remoteFile, err := t.client.GetRemoteFile(&client.GetRemoteFileRequest{
+		RemoteFileId: photoId,
+	})
+	if err != nil {
+		return "", fmt.Errorf("GetRemoteFile failed: %w", err)
+	}
+
+	// 2. Начинаем опрашивать статус загрузки
+	var fileInfo *client.File
+	for {
+		fileInfo, err = t.client.GetFile(&client.GetFileRequest{
+			FileId: remoteFile.Id,
+		})
+		if err != nil {
+			return "", fmt.Errorf("GetFile polling failed: %w", err)
+		}
+		if fileInfo.Local.IsDownloadingCompleted {
+			break
+		}
+		time.Sleep(100 * time.Millisecond)
+	}
+
+	// 3. Читаем файл из кеша TDLib
+	data, err := os.ReadFile(fileInfo.Local.Path)
+	if err != nil {
+		return "", fmt.Errorf("failed to read file %s: %w", fileInfo.Local.Path, err)
+	}
+	encoded := base64.StdEncoding.EncodeToString(data)
+	return encoded, nil
 }
