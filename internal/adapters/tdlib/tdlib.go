@@ -203,30 +203,29 @@ func (t *TDLibClient) GetJoinedChannelIdentifiers() (map[string]bool, error) {
 
 	// 2. Обходим все chatID
 	for _, chatID := range chatsResp.ChatIds {
-		chat, err := t.client.GetChat(&client.GetChatRequest{
-			ChatId: chatID,
-		})
+		chat, err := t.client.GetChat(&client.GetChatRequest{ChatId: chatID})
 		if err != nil {
 			t.logger.Error("GetChat failed", "chat_id", chatID, "error", err)
 			continue
 		}
 
 		switch ct := chat.Type.(type) {
-		// 1) Каналы и супергруппы
+		// канал или супергруппа
 		case *client.ChatTypeSupergroup:
-			sup, err := t.client.GetSupergroup(&client.GetSupergroupRequest{
-				SupergroupId: ct.SupergroupId,
-			})
-			if err != nil {
-				t.logger.Error("GetSupergroup failed", "supergroup_id", ct.SupergroupId, "error", err)
-				continue
-			}
-			for _, u := range sup.Usernames.ActiveUsernames {
-				identifiers["@"+u] = true
-				break
+			// получение публичного @username
+			if ct.IsChannel {
+				sup, err := t.client.GetSupergroup(&client.GetSupergroupRequest{
+					SupergroupId: ct.SupergroupId,
+				})
+				if err == nil {
+					for _, u := range sup.Usernames.ActiveUsernames {
+						identifiers["@"+u] = true
+						break
+					}
+				}
 			}
 
-		// 2) Приватный чат с пользователем
+		// приватный чат с пользователем
 		case *client.ChatTypePrivate:
 			usr, err := t.client.GetUser(&client.GetUserRequest{
 				UserId: ct.UserId,
@@ -235,12 +234,16 @@ func (t *TDLibClient) GetJoinedChannelIdentifiers() (map[string]bool, error) {
 				t.logger.Error("GetUser failed", "user_id", ct.UserId, "error", err)
 				continue
 			}
+			// 5) Добавляем @username, если он задан
 			for _, u := range usr.Usernames.ActiveUsernames {
-				identifiers["@"+u] = true
+				if u != "" {
+					identifiers["@"+u] = true
+				}
 				break
-
 			}
+		// остальные типы (basic groups, secret chats) — у них нет username
 		default:
+			// ничего не делаем
 		}
 	}
 
