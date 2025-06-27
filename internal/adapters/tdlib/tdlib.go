@@ -87,15 +87,15 @@ func (t *TDLibClient) JoinChannels(chs []string) {
 
 	joinedChs, err := t.GetJoinedChannels()
 	if err != nil {
-		t.logger.Info("Failed to fetch joined channels, aborting", "error", err)
+		t.logger.Error("Failed to fetch joined channels, aborting", "error", err)
 		return
 	}
-	t.logger.Info("Already joined channels:", joinedChs)
 
 	for _, ch := range chs {
+		t.logger.Info("Processing channel", "channel", ch)
 		// 1) Пропускаем, если уже присоединились
 		if _, isJoined := joinedChs[ch]; isJoined {
-			t.logger.Debug("Already a member, skipping", "channel", ch)
+			t.logger.Error("Already a member, skipping", "channel", ch)
 			continue
 		}
 
