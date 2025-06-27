@@ -83,14 +83,16 @@ func (t *TDLibClient) JoinChannel(username string) error {
 	return nil
 }
 func (t *TDLibClient) JoinChannels(chs []string) {
+	t.logger.Info("Join Channnels", chs)
 	joinedChs, err := t.GetJoinedChannels()
+	t.logger.Info("Joined Channnels", joinedChs)
 	if err != nil {
 		t.logger.Error("Failed to receive joined channels", "stop Joining channels")
 		return
 	}
 	for _, ch := range chs {
 		_, ok := joinedChs[ch]
-		if !ok && strings.Contains(ch, "@") {
+		if !ok && strings.HasPrefix(ch, "@") {
 			if err := t.JoinChannel(ch); err != nil {
 				// Если ошибка содержит USER_ALREADY_PARTICIPANT — просто логируем и продолжаем
 				t.logger.Error("Failed to join channel", "channel", ch, "error", err)
