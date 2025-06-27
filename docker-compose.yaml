@@ -23,16 +23,19 @@ services:
     restart: unless-stopped
     entrypoint: >
       bash -c '
-        # 1) Запускаем Redis в фоне через официальный entrypoint
-        /usr/local/bin/docker-entrypoint.sh redis-stack-server & 
-        # 2) Ждём, пока сервер не ответит на PING
-        until redis-cli ping; do 
-          echo "Waiting for Redis…"; 
-          sleep 1; 
+        # 1) Запускаем Redis в фоне через встроенный скрипт
+        /entrypoint.sh redis-stack-server &
+      
+        # 2) Ждём, пока станет доступен
+        until redis-cli ping; do
+          echo "Waiting for Redis…"
+          sleep 1
         done
-        # 3) Делаем скрипт исполняемым и инициализируем индекс
+      
+        # 3) Инициализируем RediSearch
         chmod +x /scripts/init_redis_search.sh && /scripts/init_redis_search.sh
-        # 4) Ждём фонового процесса Redis, чтобы контейнер не упал
+      
+        # 4) Ожидаем фонового процесса, чтобы контейнер не завершился
         wait
       '
     ports:
