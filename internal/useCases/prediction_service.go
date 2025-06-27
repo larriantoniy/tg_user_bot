@@ -42,7 +42,6 @@ func (s *PredictionService) Save(msg *domain.Message) error {
 }
 
 func (s *PredictionService) GetAll() ([]domain.Prediction, error) {
-	s.logger.Info("Get All prediction")
 	return s.repo.GetAll()
 }
 
