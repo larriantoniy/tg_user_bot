@@ -221,8 +221,6 @@ func (t *TDLibClient) GetJoinedChannelIdentifiers() (map[string]bool, error) {
 					identifiers["@"+sup.Usernames.ActiveUsernames[0]] = true
 				}
 			}
-
-		// приватный чат с пользователем
 		case *client.ChatTypePrivate:
 			usr, err := t.client.GetUser(&client.GetUserRequest{
 				UserId: ct.UserId,
@@ -231,12 +229,8 @@ func (t *TDLibClient) GetJoinedChannelIdentifiers() (map[string]bool, error) {
 				t.logger.Error("GetUser failed", "user_id", ct.UserId, "error", err)
 				continue
 			}
-			// 5) Добавляем @username, если он задан
-			for _, u := range usr.Usernames.ActiveUsernames {
-				if u != "" {
-					identifiers["@"+u] = true
-				}
-				break
+			if usr != nil && usr.Usernames != nil && len(usr.Usernames.ActiveUsernames) > 0 {
+				identifiers["@"+usr.Usernames.ActiveUsernames[0]] = true
 			}
 		// остальные типы (basic groups, secret chats) — у них нет username
 		default:
