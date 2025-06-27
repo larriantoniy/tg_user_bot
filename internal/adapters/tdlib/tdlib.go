@@ -83,34 +83,43 @@ func (t *TDLibClient) JoinChannel(username string) error {
 	return nil
 }
 func (t *TDLibClient) JoinChannels(chs []string) {
-	t.logger.Info("Join Channnels", chs)
+	t.logger.Info("Join Channels:", chs)
+
 	joinedChs, err := t.GetJoinedChannels()
-	t.logger.Info("Joined Channnels", joinedChs)
 	if err != nil {
-		t.logger.Error("Failed to receive joined channels", "stop Joining channels")
+		t.logger.Error("Failed to fetch joined channels, aborting", "error", err)
 		return
 	}
+	t.logger.Info("Already joined channels:", joinedChs)
+
 	for _, ch := range chs {
-		_, ok := joinedChs[ch]
-		if !ok && strings.HasPrefix(ch, "@") {
+		// 1) Пропускаем, если уже присоединились
+		if _, isJoined := joinedChs[ch]; isJoined {
+			t.logger.Debug("Already a member, skipping", "channel", ch)
+			continue
+		}
+
+		// 2) Если username (@name) — подписываемся через JoinChannel
+		if strings.HasPrefix(ch, "@") {
 			if err := t.JoinChannel(ch); err != nil {
-				// Если ошибка содержит USER_ALREADY_PARTICIPANT — просто логируем и продолжаем
-				t.logger.Error("Failed to join channel", "channel", ch, "error", err)
+				t.logger.Error("Failed to join by username", "channel", ch, "error", err)
 			} else {
-				t.logger.Info("Successfully joined channel", "channel", ch)
+				t.logger.Info("Joined channel by username", "channel", ch)
 			}
+			continue
+		}
+
+		// 3) Иначе — это, скорее всего, invite link
+		t.logger.Info("Joining by invite link", "link", ch)
+		_, err := t.client.JoinChatByInviteLink(&client.JoinChatByInviteLinkRequest{
+			InviteLink: ch,
+		})
+		if err != nil {
+			t.logger.Error("Failed to join by invite link", "link", ch, "error", err)
 		} else {
-			t.logger.Info("Invite link channel", ch)
-			if _, err := t.client.JoinChatByInviteLink(&client.JoinChatByInviteLinkRequest{
-				InviteLink: ch,
-			}); err != nil {
-				t.logger.Error("Failed to join channel", "channel", ch, "error", err)
-			} else {
-				t.logger.Info("Successfully joined channel", "channel", ch)
-			}
+			t.logger.Info("Joined channel by invite link", "link", ch)
 		}
 	}
-
 }
 
 // Listen возвращает канал доменных сообщений из TDLib и запускает обработку обновлений
