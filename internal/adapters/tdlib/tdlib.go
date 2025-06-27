@@ -83,41 +83,52 @@ func (t *TDLibClient) JoinChannel(username string) error {
 	return nil
 }
 func (t *TDLibClient) JoinChannels(chs []string) {
-	t.logger.Info("Join Channels:", chs)
+	// 1) Логируем входные данные
+	t.logger.Info("JoinChannels called", "channels", chs)
 
+	// 2) Получаем уже присоединённые
 	joinedChs, err := t.GetJoinedChannels()
 	if err != nil {
 		t.logger.Error("Failed to fetch joined channels, aborting", "error", err)
 		return
 	}
+	t.logger.Info("Already joined channels", "joined", joinedChs)
 
+	// 3) Если ни одного канала нет — сразу выходим
+	if len(chs) == 0 {
+		t.logger.Info("No channels to join, exiting")
+		return
+	}
+
+	// 4) Пробегаем по каждому каналу и логируем, что сейчас обрабатываем
 	for _, ch := range chs {
 		t.logger.Info("Processing channel", "channel", ch)
-		// 1) Пропускаем, если уже присоединились
+
+		// 4.1) Уже в канале?
 		if _, isJoined := joinedChs[ch]; isJoined {
-			t.logger.Error("Already a member, skipping", "channel", ch)
+			t.logger.Info("Already a member, skipping", "channel", ch)
 			continue
 		}
 
-		// 2) Если username (@name) — подписываемся через JoinChannel
+		// 4.2) Username-канал
 		if strings.HasPrefix(ch, "@") {
+			t.logger.Info("Attempting JoinChannel by username", "channel", ch)
 			if err := t.JoinChannel(ch); err != nil {
 				t.logger.Error("Failed to join by username", "channel", ch, "error", err)
 			} else {
-				t.logger.Info("Joined channel by username", "channel", ch)
+				t.logger.Info("Successfully joined by username", "channel", ch)
 			}
 			continue
 		}
 
-		// 3) Иначе — это, скорее всего, invite link
-		t.logger.Info("Joining by invite link", "link", ch)
-		_, err := t.client.JoinChatByInviteLink(&client.JoinChatByInviteLinkRequest{
+		// 4.3) Invite-link
+		t.logger.Info("Attempting JoinChatByInviteLink", "link", ch)
+		if _, err := t.client.JoinChatByInviteLink(&client.JoinChatByInviteLinkRequest{
 			InviteLink: ch,
-		})
-		if err != nil {
+		}); err != nil {
 			t.logger.Error("Failed to join by invite link", "link", ch, "error", err)
 		} else {
-			t.logger.Info("Joined channel by invite link", "link", ch)
+			t.logger.Info("Successfully joined by invite link", "link", ch)
 		}
 	}
 }
