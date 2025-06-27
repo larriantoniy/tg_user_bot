@@ -19,6 +19,7 @@ func NewHandler(prediction *useCases.PredictionService) *Handler {
 }
 
 func (h *Handler) GetAll(w http.ResponseWriter, r *http.Request) {
+
 	data, err := h.prediction.GetAll()
 	if err != nil {
 		fmt.Printf("Get All err %s", err)
