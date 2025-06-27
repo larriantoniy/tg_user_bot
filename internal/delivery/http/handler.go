@@ -2,6 +2,7 @@ package http
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/larriantoniy/tg_user_bot/internal/useCases"
@@ -20,6 +21,7 @@ func NewHandler(prediction *useCases.PredictionService) *Handler {
 func (h *Handler) GetAll(w http.ResponseWriter, r *http.Request) {
 	data, err := h.prediction.GetAll()
 	if err != nil {
+		fmt.Printf("Get All err %s", err)
 		http.Error(w, "Failed to fetch predictions", http.StatusInternalServerError)
 		return
 	}
