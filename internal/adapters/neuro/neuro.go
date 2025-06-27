@@ -84,23 +84,20 @@ func (n *Neuro) GetCompletion(ctx context.Context, msg *domain.Message) (*domain
 		return nil, fmt.Errorf("marshal body: %w", err)
 	}
 
-	// Общий запрос
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, n.baseURL, bytes.NewReader(bodyBytes))
-	n.logger.Info("Request to neuro:", req)
 	if err != nil {
 		return nil, fmt.Errorf("new request: %w", err)
 	}
+	n.logger.Info("Request to neuro", "url", req.URL.String())
 
-	// Ваша структура для ответа
 	var nr domain.NeuroResponse
 
-	// Вызываем запрос с тремя попытками
 	err = retry(3, time.Second, func() error {
 		resp, err := n.client.Do(req)
-		defer resp.Body.Close()
 		if err != nil {
 			return err
 		}
+		defer resp.Body.Close()
 
 		if resp.StatusCode != http.StatusOK {
 			data, _ := io.ReadAll(resp.Body)
@@ -114,14 +111,16 @@ func (n *Neuro) GetCompletion(ctx context.Context, msg *domain.Message) (*domain
 
 	if len(nr.Choices) == 0 {
 		return nil, fmt.Errorf("empty choices")
-
 	}
-	n.logger.Info("Request from neuro", nr.Choices[0].Message.Content)
-	var sb *strings.Builder
+	n.logger.Info("Response from neuro", "content", nr.Choices[0].Message.Content)
+
+	var sb strings.Builder
 	sb.WriteString(msg.Text)
 	sb.WriteString("\n")
-	sb.WriteString(nr.Choices[0].Message.Content) /// добавим в текст ответ вида  • Вид спорта: soccer / n/a  • Ставка: true/false
-	n.logger.Info("After neuro processing string =", sb.String())
+	sb.WriteString(nr.Choices[0].Message.Content)
+	n.logger.Info("After neuro processing string", "result", sb.String())
+
 	msg.Text = sb.String()
+
 	return msg, nil
 }
