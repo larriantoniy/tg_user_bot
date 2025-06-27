@@ -212,21 +212,8 @@ func (t *TDLibClient) GetJoinedChannelIdentifiers() (map[string]bool, error) {
 		}
 
 		switch ct := chat.Type.(type) {
-
 		// 1) Каналы и супергруппы
 		case *client.ChatTypeSupergroup:
-			// a) если это именно канал — экспортируем invite link
-			if ct.IsChannel {
-				linkResp, err := t.client.GetChatInviteLink(&client.GetChatInviteLinkRequest{
-					ChatId: chatID, // Важно: именно chatID, а не SupergroupId
-				})
-				if err != nil {
-					t.logger.Error("ExportChatInviteLink failed", "supergroup_id", ct.SupergroupId, "error", err)
-				} else {
-					identifiers[linkResp.InviteLink] = true
-				}
-			}
-			// b) достаём публичный @username из Supergroup.Usernames
 			sup, err := t.client.GetSupergroup(&client.GetSupergroupRequest{
 				SupergroupId: ct.SupergroupId,
 			})
@@ -235,10 +222,8 @@ func (t *TDLibClient) GetJoinedChannelIdentifiers() (map[string]bool, error) {
 				continue
 			}
 			for _, u := range sup.Usernames.ActiveUsernames {
-
 				identifiers["@"+u] = true
 				break
-
 			}
 
 		// 2) Приватный чат с пользователем
@@ -255,8 +240,6 @@ func (t *TDLibClient) GetJoinedChannelIdentifiers() (map[string]bool, error) {
 				break
 
 			}
-
-		// 3) Оставляем без изменений другие типы чатов (basic group, secret chat и т.п.)
 		default:
 		}
 	}
