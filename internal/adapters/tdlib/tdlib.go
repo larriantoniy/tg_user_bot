@@ -143,13 +143,13 @@ func (t *TDLibClient) Listen() (<-chan domain.Message, error) {
 		defer close(out)
 		for update := range listener.Updates {
 			t.logger.Debug("Received new message")
-			if upd, ok := update.(*client.UpdateChatLastMessage); ok {
+			if upd, ok := update.(*client.UpdateNewMessage); ok {
 				_, err := t.processUpdateNewMessage(out, upd)
 				if err != nil {
-					t.logger.Error("Error process UpdateNewMessage msg content type", "upd MessageContentType", upd.LastMessage.Content.MessageContentType())
+					t.logger.Error("Error process UpdateNewMessage msg content type", "upd MessageContentType", upd.Message.Content.MessageContentType())
 				}
 			} else {
-				t.logger.Debug("Skipping update: not UpdateNewMessage", "update", update)
+				t.logger.Debug("Skipping update: not UpdateNewMessage", "upd", upd)
 			}
 
 		}
@@ -252,19 +252,19 @@ func (t *TDLibClient) getChatTitle(chatID int64) (string, error) {
 	return chat.Title, nil
 }
 
-func (t *TDLibClient) processUpdateNewMessage(out chan domain.Message, upd *client.UpdateChatLastMessage) (<-chan domain.Message, error) {
-	chatName, err := t.getChatTitle(upd.LastMessage.ChatId)
+func (t *TDLibClient) processUpdateNewMessage(out chan domain.Message, upd *client.UpdateNewMessage) (<-chan domain.Message, error) {
+	chatName, err := t.getChatTitle(upd.Message.ChatId)
 	if err != nil {
 		t.logger.Info("Error getting chat title", err)
 		chatName = ""
 	}
-	switch content := upd.LastMessage.Content.(type) {
+	switch content := upd.Message.Content.(type) {
 	case *client.MessageText:
-		return t.processMessageText(out, content, upd.LastMessage.ChatId, chatName)
+		return t.processMessageText(out, content, upd.Message.ChatId, chatName)
 	case *client.MessagePhoto:
-		return t.processMessagePhoto(out, content, upd.LastMessage.ChatId, chatName)
+		return t.processMessagePhoto(out, content, upd.Message.ChatId, chatName)
 	default:
-		t.logger.Debug("cant switch type update , upd message content", upd.LastMessage.Content)
+		t.logger.Debug("cant switch type update , upd message content", upd.Message.Content)
 		return out, nil
 	}
 }
