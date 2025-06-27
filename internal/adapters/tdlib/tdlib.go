@@ -87,7 +87,7 @@ func (t *TDLibClient) JoinChannels(chs []string) {
 
 	joinedChs, err := t.GetJoinedChannels()
 	if err != nil {
-		t.logger.Error("Failed to fetch joined channels, aborting", "error", err)
+		t.logger.Info("Failed to fetch joined channels, aborting", "error", err)
 		return
 	}
 	t.logger.Info("Already joined channels:", joinedChs)
