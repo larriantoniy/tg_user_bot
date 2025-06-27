@@ -198,6 +198,7 @@ func (t *TDLibClient) GetJoinedChannels() (map[string]bool, error) {
 	channels := make(map[string]bool)
 
 	for {
+		t.logger.Info("GetJoinedChannels range")
 		// 1) Получаем страницу чатов из основного списка (ChatListMain)
 		resp, err := t.client.GetChats(&client.GetChatsRequest{
 			ChatList: &client.ChatListMain{},
