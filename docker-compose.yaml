@@ -25,12 +25,14 @@ services:
       - bash
       - -c
       - |
-        # дать права на исполнение
-        chmod +x /scripts/init_redis_search.sh && \
-        # запустить инициализацию
-        /scripts/init_redis_search.sh && \
-        # затем старт стандартного entrypoint Redis Stack
-        exec docker-entrypoint.sh redis-stack-server
+        # Запускаем сервер в фоне
+        exec docker-entrypoint.sh redis-stack-server &
+        # Ждём пока станет доступен
+        until redis-cli ping; do echo "Waiting for Redis…"; sleep 1; done
+        # Инициализируем RediSearch
+        /scripts/init_redis_search.sh
+        # Ожидаем, блокируя shell
+        wait
     ports:
       - "6379:6379"
     volumes:
