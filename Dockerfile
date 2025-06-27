@@ -66,6 +66,7 @@ RUN apt-get update && apt-get install -y \
       libssl3 \
       zlib1g \
       libstdc++6 \
+      ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 # Копируем все артефакты libtdjson с их версионными именами
