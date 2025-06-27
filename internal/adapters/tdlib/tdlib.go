@@ -189,7 +189,7 @@ func (t *TDLibClient) IsChannelMember(username string) (bool, error) {
 }
 
 func (t *TDLibClient) GetJoinedChannelIdentifiers() (map[string]bool, error) {
-	const limit = 100 // сколько чатов максимум забрать за один запрос
+	const limit = 100
 	identifiers := make(map[string]bool, limit)
 
 	// 1. Получаем первые `limit` чатов из основного списка
@@ -201,7 +201,7 @@ func (t *TDLibClient) GetJoinedChannelIdentifiers() (map[string]bool, error) {
 		return nil, fmt.Errorf("GetChats failed: %w", err)
 	}
 
-	// 2. Для каждого chatID запрашиваем объект чата и собираем идентификаторы
+	// 2. Обходим все chatID
 	for _, chatID := range chatsResp.ChatIds {
 		chat, err := t.client.GetChat(&client.GetChatRequest{
 			ChatId: chatID,
@@ -211,22 +211,53 @@ func (t *TDLibClient) GetJoinedChannelIdentifiers() (map[string]bool, error) {
 			continue
 		}
 
-		// 1) Если это супергрруппа с флагом канала — экспортим инвайт-ссылку
-		if sg, ok := chat.Type.(*client.ChatTypeSupergroup); ok && sg.IsChannel {
-			linkResp, err := t.client.GetChatInviteLink(&client.GetChatInviteLinkRequest{
-				ChatId: sg.SupergroupId,
+		switch ct := chat.Type.(type) {
+
+		// 1) Каналы и супергруппы
+		case *client.ChatTypeSupergroup:
+			// a) если это именно канал — экспортируем invite link
+			if ct.IsChannel {
+				linkResp, err := t.client.GetChatInviteLink(&client.GetChatInviteLinkRequest{
+					ChatId: ct.SupergroupId,
+				})
+				if err != nil {
+					t.logger.Error("ExportChatInviteLink failed", "supergroup_id", ct.SupergroupId, "error", err)
+				} else {
+					identifiers[linkResp.InviteLink] = true
+				}
+			}
+			// b) достаём публичный @username из Supergroup.Usernames
+			sup, err := t.client.GetSupergroup(&client.GetSupergroupRequest{
+				SupergroupId: ct.SupergroupId,
 			})
 			if err != nil {
-				t.logger.Error("ExportChatInviteLink failed", "chat_id", chatID, "error", err)
+				t.logger.Error("GetSupergroup failed", "supergroup_id", ct.SupergroupId, "error", err)
 				continue
 			}
-			identifiers[linkResp.InviteLink] = true
-			continue
-		}
+			for _, u := range sup.Usernames.ActiveUsernames {
 
-		// иначе, если у чата есть публичный username — берём "@username"
-		if chat.Extra != "" {
-			identifiers["@"+chat.Extra] = true
+				identifiers["@"+u] = true
+				break
+
+			}
+
+		// 2) Приватный чат с пользователем
+		case *client.ChatTypePrivate:
+			usr, err := t.client.GetUser(&client.GetUserRequest{
+				UserId: ct.UserId,
+			})
+			if err != nil {
+				t.logger.Error("GetUser failed", "user_id", ct.UserId, "error", err)
+				continue
+			}
+			for _, u := range usr.Usernames.ActiveUsernames {
+				identifiers["@"+u] = true
+				break
+
+			}
+
+		// 3) Оставляем без изменений другие типы чатов (basic group, secret chat и т.п.)
+		default:
 		}
 	}
 
