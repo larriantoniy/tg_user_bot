@@ -46,8 +46,8 @@ jobs:
             docker container prune -f
 
             # Запускаем сервисы заново (без билда)
-            docker compose up --no-build
-            docker-compose logs -f redis
+            docker compose up -d --no-build
+          
             docker compose exec bot sh -c '
             echo "=== Current environment variable on VPS ==="    
             set +u
