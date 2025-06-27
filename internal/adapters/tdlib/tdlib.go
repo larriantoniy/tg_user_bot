@@ -92,7 +92,7 @@ func (t *TDLibClient) JoinChannels(chs []string) {
 		t.logger.Error("Failed to fetch joined channels, aborting", "error", err)
 		return
 	}
-	t.logger.Info("Already joined channels", "joined", joinedChs)
+	t.logger.Info("Already joined channels", "channels", joinedChs)
 
 	// 3) Если ни одного канала нет — сразу выходим
 	if len(chs) == 0 {
@@ -189,6 +189,7 @@ func (t *TDLibClient) IsChannelMember(username string) (bool, error) {
 }
 
 func (t *TDLibClient) GetJoinedChannels() (map[string]bool, error) {
+	t.logger.Info("GetJoinedChannels cals")
 	var (
 		// для первой страницы используем максимально возможный order
 		//@todo увеличить лимит через pagination
