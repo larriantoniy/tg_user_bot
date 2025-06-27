@@ -229,10 +229,10 @@ func (t *TDLibClient) GetJoinedChannelIdentifiers() (map[string]bool, error) {
 				t.logger.Error("GetUser failed", "user_id", ct.UserId, "error", err)
 				continue
 			}
-			if usr != nil && usr.Usernames != nil && len(usr.Usernames.ActiveUsernames) > 0 {
+			if usr != nil && usr.Usernames != nil && usr.Usernames.ActiveUsernames != nil && len(usr.Usernames.ActiveUsernames) > 0 {
 				identifiers["@"+usr.Usernames.ActiveUsernames[0]] = true
 			}
-		// остальные типы (basic groups, secret chats) — у них нет username
+
 		default:
 			// ничего не делаем
 		}
