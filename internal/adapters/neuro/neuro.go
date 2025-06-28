@@ -89,13 +89,14 @@ func (n *Neuro) GetCompletion(ctx context.Context, msg *domain.Message) (*domain
 	if err != nil {
 		return nil, fmt.Errorf("new request: %w", err)
 	}
-	n.logger.Info("Request to neuro", "url", req.URL.String())
+	n.logger.Info("Request to neuro", "req", req)
 
 	var nr domain.NeuroResponse
 
 	err = retry(3, time.Second, func() error {
 		resp, err := n.client.Do(req)
 		if err != nil {
+			n.logger.Info("Request to neuro ", "err", err)
 			return err
 		}
 		defer resp.Body.Close()
