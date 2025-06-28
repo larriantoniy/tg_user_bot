@@ -3,6 +3,7 @@ package useCases
 import (
 	"log/slog"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -46,7 +47,13 @@ func (s *PredictionService) GetAll() ([]domain.Prediction, error) {
 }
 
 func (s *PredictionService) IsPrediction(input string) bool {
-
+	low := strings.ToLower(input)
+	if strings.Contains(low, "прогноз") &&
+		strings.Contains(low, "коэффициент") &&
+		strings.Contains(low, "кф") &&
+		s.decimalRegexp.MatchString(input) {
+		return true
+	}
 	match := s.re.FindStringSubmatch(input)
 	// match[0] — вся строка, match[1] — вид спорта, match[2] — true/false :contentReference[oaicite:4]{index=4}
 

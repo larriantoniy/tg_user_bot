@@ -79,34 +79,53 @@ func (n *Neuro) GetCompletion(ctx context.Context, msg *domain.Message) (*domain
 	// Подготовка тела
 	body := n.defaultBody
 	body.Messages[0].Content[1].ImageUrl.Url = msg.PhotoFile
+
 	bodyBytes, err := json.Marshal(body)
 	if err != nil {
 		return nil, fmt.Errorf("marshal body: %w", err)
 	}
+
 	url := n.baseURL + "/" + domain.MistralModel
 
+	// Создание запроса
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(bodyBytes))
 	if err != nil {
 		return nil, fmt.Errorf("new request: %w", err)
 	}
-	n.logger.Info("Request to neuro", "req", req)
 
+	// Логируем URL, метод и заголовки — безопасно
+	n.logger.Info("Request to neuro",
+		"url", req.URL.String(),
+		"method", req.Method,
+		"headers", req.Header,
+	)
+
+	// Логируем тело запроса (если нужно для отладки)
+	n.logger.Debug("Request body", "body", string(bodyBytes))
+
+	// Ответ нейросети
 	var nr domain.NeuroResponse
 
 	err = retry(3, time.Second, func() error {
 		resp, err := n.client.Do(req)
 		if err != nil {
-			n.logger.Info("Request to neuro ", "err", err)
+			n.logger.Error("HTTP request to neuro failed", "err", err)
 			return err
 		}
 		defer resp.Body.Close()
 
 		if resp.StatusCode != http.StatusOK {
 			data, _ := io.ReadAll(resp.Body)
+			n.logger.Error("Neuro API returned error",
+				"status", resp.StatusCode,
+				"body", string(data),
+			)
 			return fmt.Errorf("status %d: %s", resp.StatusCode, string(data))
 		}
+
 		return json.NewDecoder(resp.Body).Decode(&nr)
 	})
+
 	if err != nil {
 		return nil, fmt.Errorf("request failed: %w", err)
 	}
@@ -114,15 +133,17 @@ func (n *Neuro) GetCompletion(ctx context.Context, msg *domain.Message) (*domain
 	if len(nr.Choices) == 0 {
 		return nil, fmt.Errorf("empty choices")
 	}
+
 	n.logger.Info("Response from neuro", "content", nr.Choices[0].Message.Content)
 
+	// Склеиваем исходный и нейроответ
 	var sb strings.Builder
 	sb.WriteString(msg.Text)
 	sb.WriteString("\n")
 	sb.WriteString(nr.Choices[0].Message.Content)
-	n.logger.Info("After neuro processing string", "result", sb.String())
+
+	n.logger.Info("After neuro processing", "result", sb.String())
 
 	msg.Text = sb.String()
-
 	return msg, nil
 }

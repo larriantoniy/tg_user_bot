@@ -77,11 +77,13 @@ func main() {
 		for msg := range updates {
 			logger.Info("New message", "chat_id", msg.ChatID, "text", msg.Text)
 			newMsg, err := nr.GetCompletion(context.Background(), &msg)
-			if err != nil {
+			if err == nil {
+				if ps.IsPrediction(newMsg.Text) {
+					ps.Save(newMsg)
+				}
+
+			} else {
 				logger.Error("GetCompletion", "err", err)
-			}
-			if ps.IsPrediction(newMsg.Text) {
-				ps.Save(newMsg)
 			}
 		}
 
