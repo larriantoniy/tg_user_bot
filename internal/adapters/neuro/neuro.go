@@ -45,7 +45,7 @@ func NewNeuro(cfg *config.Config, logger *slog.Logger) (*Neuro, error) {
 					},
 					{
 						Type:     "image_url", // "image_url" , шлем фото в б64
-						ImageUrl: domain.ImageUrl{Url: ""},
+						ImageUrl: &domain.ImageUrl{Url: ""},
 					},
 				},
 			},
