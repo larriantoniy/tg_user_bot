@@ -15,9 +15,9 @@ type ImageUrl struct {
 }
 
 type MessageContent struct {
-	Type     string   `json:"type"` // "text" или "image_url"
-	Text     string   `json:"text"`
-	ImageUrl ImageUrl `json:"image_url"`
+	Type     string    `json:"type"` // "text" или "image_url"
+	Text     string    `json:"text"`
+	ImageUrl *ImageUrl `json:"image_url,omitempty"`
 }
 
 type NeuroMessage struct {
