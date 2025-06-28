@@ -41,7 +41,7 @@ func NewNeuro(cfg *config.Config, logger *slog.Logger) (*Neuro, error) {
 				Content: []domain.MessageContent{
 					{
 						Type: "text", // "text" для промпта
-						Text: "prompt",
+						Text: prompt,
 					},
 					{
 						Type:     "image_url", // "image_url" , шлем фото в б64
