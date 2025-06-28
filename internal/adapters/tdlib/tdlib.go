@@ -264,7 +264,7 @@ func (t *TDLibClient) processUpdateNewMessage(out chan domain.Message, upd *clie
 	case *client.MessagePhoto:
 		return t.processMessagePhoto(out, content, upd.Message.ChatId, chatName)
 	default:
-		t.logger.Debug("cant switch type update , upd message content", upd.Message.Content)
+		t.logger.Debug("cant switch type update", "upd message MessageContentType()", upd.Message.Content.MessageContentType())
 		return out, nil
 	}
 }
