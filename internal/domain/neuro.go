@@ -26,11 +26,9 @@ type NeuroMessage struct {
 }
 
 type DefaultNeuroBody struct {
-	ContentType   string         `json:"Content-type"`
-	Authorization string         `json:"Authorization"`
-	Model         string         `json:"model"`
-	Messages      []NeuroMessage `json:"messages"`
-	Stream        bool           `json:"stream"`
+	Model    string         `json:"model"`
+	Messages []NeuroMessage `json:"messages"`
+	Stream   bool           `json:"stream"`
 }
 
 // NeuroResponse соответствует корневому JSON-объекту.

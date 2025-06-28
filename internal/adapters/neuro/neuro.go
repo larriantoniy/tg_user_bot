@@ -34,9 +34,7 @@ type Neuro struct {
 func NewNeuro(cfg *config.Config, logger *slog.Logger) (*Neuro, error) {
 	// 1) Кодируем заранее JSON-тело
 	body := domain.DefaultNeuroBody{
-		ContentType:   "application/json",
-		Authorization: "Bearer " + cfg.NeuroToken, // ваш ключ опенроутер
-		Model:         domain.MistralModel,        // например "mistral-small-2506"
+		Model: domain.MistralModel, // например "mistral-small-2506"
 		Messages: []domain.NeuroMessage{
 			{
 				Role: domain.RoleUser,
@@ -97,6 +95,8 @@ func (n *Neuro) GetCompletion(ctx context.Context, msg *domain.Message) (*domain
 	if err != nil {
 		return msg, fmt.Errorf("new request: %w", err)
 	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+n.apiKey)
 
 	// Логируем URL, метод и заголовки — безопасно
 	n.logger.Info("Request to neuro",
