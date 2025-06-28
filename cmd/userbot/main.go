@@ -76,15 +76,17 @@ func main() {
 
 		for msg := range updates {
 			logger.Info("New message", "chat_id", msg.ChatID, "text", msg.Text)
-			newMsg, err := nr.GetCompletion(context.Background(), &msg)
-			if err == nil {
-				if ps.IsPrediction(newMsg.Text) {
-					ps.Save(newMsg)
+			if msg.PhotoFile != "" {
+				newMsg, err := nr.GetCompletion(context.Background(), &msg)
+				if err == nil {
+					if ps.IsPrediction(newMsg.Text) {
+						ps.Save(newMsg)
+					}
+				} else {
+					logger.Error("GetCompletion", "err", err)
 				}
-
-			} else {
-				logger.Error("GetCompletion", "err", err)
 			}
+
 		}
 
 		logger.Warn("Listen exited — вероятно упало соединение, пробуем снова")

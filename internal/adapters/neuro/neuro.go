@@ -18,6 +18,7 @@ const prompt = "Вот скриншот. " +
 	"Распознай информацию , определи и дай ответ вида :\n" +
 	"Вид спорта: [Вид спорта на английском языке если это ставка на спортивное событие , и n/a если это не ставка на спортивное событие или ставка на сыгранное спортивное событие]\n" +
 	"Ставка: [true если это ставка на спортивное событие , и false если это не ставка на спортивное событие или ставка на сыгранное спортивное событие]\n" +
+	"Дата: [Дата и время события в формате DD-MM-YYYY HH:MM]\n" +
 	"Без домыслов, анализа или пояснений — только данные со скриншота."
 
 type Neuro struct {
@@ -78,11 +79,15 @@ func retry(attempts int, sleep time.Duration, fn func() error) error {
 func (n *Neuro) GetCompletion(ctx context.Context, msg *domain.Message) (*domain.Message, error) {
 	// Подготовка тела
 	body := n.defaultBody
-	body.Messages[0].Content[1].ImageUrl.Url = msg.PhotoFile
+	///todo сейчас не обрабатываем сообщения без фото , нужно подумать как обрабатывать
+	if msg.PhotoFile == "" {
+		return msg, nil
+	}
 
+	body.Messages[0].Content[1].ImageUrl.Url = msg.PhotoFile
 	bodyBytes, err := json.Marshal(body)
 	if err != nil {
-		return nil, fmt.Errorf("marshal body: %w", err)
+		return msg, fmt.Errorf("marshal body: %w", err)
 	}
 
 	url := n.baseURL + "/" + domain.MistralModel
@@ -90,7 +95,7 @@ func (n *Neuro) GetCompletion(ctx context.Context, msg *domain.Message) (*domain
 	// Создание запроса
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(bodyBytes))
 	if err != nil {
-		return nil, fmt.Errorf("new request: %w", err)
+		return msg, fmt.Errorf("new request: %w", err)
 	}
 
 	// Логируем URL, метод и заголовки — безопасно
@@ -127,11 +132,11 @@ func (n *Neuro) GetCompletion(ctx context.Context, msg *domain.Message) (*domain
 	})
 
 	if err != nil {
-		return nil, fmt.Errorf("request failed: %w", err)
+		return msg, fmt.Errorf("request failed: %w", err)
 	}
 
 	if len(nr.Choices) == 0 {
-		return nil, fmt.Errorf("empty choices")
+		return msg, fmt.Errorf("empty choices")
 	}
 
 	n.logger.Info("Response from neuro", "content", nr.Choices[0].Message.Content)

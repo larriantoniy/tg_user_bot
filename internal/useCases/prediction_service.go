@@ -3,7 +3,6 @@ package useCases
 import (
 	"log/slog"
 	"regexp"
-	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -23,9 +22,7 @@ func NewPredictionService(repo ports.PredictionRepo, logger *slog.Logger) *Predi
 		repo:          repo,
 		decimalRegexp: regexp.MustCompile(`\b\d+\.\d{2}\b`),
 		logger:        logger,
-		re: regexp.MustCompile(
-			`•\s*Вид спорта:\s*([A-Za-z]+|n/a)\s*,?\s*•\s*Ставка:\s*(true|false)`,
-		),
+		re:            regexp.MustCompile(`(?i)Вид спорта:\s*([a-z]+|n/a)\s*,?\s*Ставка:\s*(true|false)\s*,?\s*Дата:\s*(\d{2}\.\d{2}\.\d{2})`),
 	}
 }
 
@@ -37,7 +34,9 @@ func (s *PredictionService) Save(msg *domain.Message) error {
 		ChatID:    msg.ChatID,
 		RawText:   msg.Text,
 		Sport:     s.extractSport(msg.Text),
-		CreatedAt: time.Now()}
+		CreatedAt: time.Now(),
+		EventDate: s.extractEventDate(msg.Text),
+	}
 	s.logger.Info("Saving", "prediction", pred)
 	return s.repo.Save(pred)
 }
@@ -47,13 +46,6 @@ func (s *PredictionService) GetAll() ([]domain.Prediction, error) {
 }
 
 func (s *PredictionService) IsPrediction(input string) bool {
-	low := strings.ToLower(input)
-	if strings.Contains(low, "прогноз") &&
-		strings.Contains(low, "коэффициент") &&
-		strings.Contains(low, "кф") &&
-		s.decimalRegexp.MatchString(input) {
-		return true
-	}
 	match := s.re.FindStringSubmatch(input)
 	// match[0] — вся строка, match[1] — вид спорта, match[2] — true/false :contentReference[oaicite:4]{index=4}
 
@@ -74,4 +66,14 @@ func (s *PredictionService) IsPrediction(input string) bool {
 func (s *PredictionService) extractSport(input string) string {
 	match := s.re.FindStringSubmatch(input)
 	return match[1]
+}
+func (s *PredictionService) extractEventDate(input string) time.Time {
+	match := s.re.FindStringSubmatch(input)
+	// Layout: день-месяц-год часы:минуты
+	layout := "02-01-2006 15:04"
+	t, err := time.Parse(layout, match[3])
+	if err != nil {
+		return time.Time{}
+	}
+	return t
 }

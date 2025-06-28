@@ -8,5 +8,6 @@ type Prediction struct {
 	RawText   string    `json:"text"`      // полный текст сообщения
 	ChatName  string    `json:"chatName"`  // ссылка или имя чата
 	CreatedAt time.Time `json:"createdAt"` // время парсинга
+	EventDate time.Time `json:"eventDate"` // дата спортивного события
 	Sport     string    `json:"sport"`     // вид спорта
 }
