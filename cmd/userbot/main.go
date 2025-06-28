@@ -78,7 +78,7 @@ func main() {
 			logger.Info("New message", "chat_id", msg.ChatID, "text", msg.Text)
 			newMsg, err := nr.GetCompletion(context.Background(), &msg)
 			if err != nil {
-				logger.Error("GetCompletion err", err)
+				logger.Error("GetCompletion", "err", err)
 			}
 			if ps.IsPrediction(newMsg.Text) {
 				ps.Save(newMsg)

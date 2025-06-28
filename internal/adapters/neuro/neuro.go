@@ -83,8 +83,9 @@ func (n *Neuro) GetCompletion(ctx context.Context, msg *domain.Message) (*domain
 	if err != nil {
 		return nil, fmt.Errorf("marshal body: %w", err)
 	}
+	url := n.baseURL + "/" + domain.MistralModel
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, n.baseURL, bytes.NewReader(bodyBytes))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(bodyBytes))
 	if err != nil {
 		return nil, fmt.Errorf("new request: %w", err)
 	}
