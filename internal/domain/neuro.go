@@ -16,7 +16,7 @@ type ImageUrl struct {
 
 type MessageContent struct {
 	Type     string    `json:"type"` // "text" или "image_url"
-	Text     string    `json:"text"`
+	Text     string    `json:"text,omitempty"`
 	ImageUrl *ImageUrl `json:"image_url,omitempty"`
 }
 
