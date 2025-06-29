@@ -42,7 +42,20 @@ func (s *PredictionService) Save(msg *domain.Message) error {
 }
 
 func (s *PredictionService) GetAll() ([]domain.Prediction, error) {
-	return s.repo.GetAll()
+	res, err := s.repo.GetAll()
+	if err != nil {
+		return res, err
+	}
+	var filterd []domain.Prediction
+	now := time.Now()
+	// возвращаем только те прогнозы которые еще не наступили по времени
+	for _, pred := range res {
+		if pred.EventDate.Before(now) {
+			filterd = append(filterd, pred)
+		}
+	}
+	return filterd, nil
+
 }
 
 func (s *PredictionService) IsPrediction(input string) bool {

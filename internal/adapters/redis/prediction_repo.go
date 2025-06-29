@@ -88,12 +88,12 @@ func parseSearchResult(res interface{}) ([]domain.Prediction, error) {
 		case string:
 			data = []byte(v)
 		default:
-			return nil, fmt.Errorf("unexpected document type: %T", rawDoc)
+			return preds, fmt.Errorf("unexpected document type: %T", rawDoc)
 		}
 
 		var p domain.Prediction
 		if err := json.Unmarshal(data, &p); err != nil {
-			return nil, fmt.Errorf("failed to unmarshal prediction JSON: %w", err)
+			return preds, fmt.Errorf("failed to unmarshal prediction JSON: %w", err)
 		}
 
 		preds = append(preds, p)
