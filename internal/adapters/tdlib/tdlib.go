@@ -1,12 +1,16 @@
 package tdlib
 
 import (
+	"bytes"
 	"encoding/base64"
 	"fmt"
 	"github.com/larriantoniy/tg_user_bot/internal/domain"
 	"github.com/larriantoniy/tg_user_bot/internal/ports"
 	"github.com/zelenin/go-tdlib/client"
+	"image"
+	"io"
 	"log/slog"
+	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -271,13 +275,13 @@ func (t *TDLibClient) processUpdateNewMessage(out chan domain.Message, upd *clie
 func (t *TDLibClient) processMessagePhoto(out chan domain.Message, msg *client.MessagePhoto, msgChatId int64, ChatName string) (<-chan domain.Message, error) {
 	var text string
 
-	var photoFile string
+	var photoFileId string
 
 	var best *client.PhotoSize
 	for i, size := range msg.Photo.Sizes {
 		if i == 0 || size.Width*size.Height > best.Width*best.Height {
 			best = size
-			photoFile = best.Photo.Remote.Id
+			photoFileId = best.Photo.Remote.Id
 		}
 	}
 	if best == nil {
@@ -286,7 +290,10 @@ func (t *TDLibClient) processMessagePhoto(out chan domain.Message, msg *client.M
 	if msg.Caption != nil {
 		text = msg.Caption.Text
 	}
-
+	photoFile, err := t.GetPhotoBase64ById(photoFileId)
+	if err != nil {
+		t.logger.Info("GetPhotoBase64ById", "err", err)
+	}
 	out <- domain.Message{
 		ChatID:    msgChatId,
 		Text:      text,
@@ -330,9 +337,35 @@ func (t *TDLibClient) GetPhotoBase64ById(photoId string) (string, error) {
 
 	// 3. Читаем файл из кеша TDLib
 	data, err := os.ReadFile(fileInfo.Local.Path)
+
 	if err != nil {
 		return "", fmt.Errorf("failed to read file %s: %w", fileInfo.Local.Path, err)
 	}
-	encoded := base64.StdEncoding.EncodeToString(data)
-	return encoded, nil
+	return BuildDataURI(bytes.NewReader(data))
+
+}
+
+// BuildDataURI читает первые 512 байт для детектирования MIME,
+// затем определяет формат через DecodeConfig и формирует Data URI.
+func BuildDataURI(r io.Reader) (string, error) {
+	// Читаем все байты (можно оптимизировать потоково)
+	data, err := io.ReadAll(r)
+	if err != nil {
+		return "", fmt.Errorf("read data: %w", err)
+	}
+
+	// 1) Sniff MIME
+	mimeType := http.DetectContentType(data[:min(512, len(data))]) // :contentReference[oaicite:9]{index=9}
+
+	// 2) DecodeConfig для более точного формата
+
+	if _, format, err := image.DecodeConfig(r); err == nil {
+		mimeType = "image/" + format // :contentReference[oaicite:10]{index=10}
+	}
+
+	// 3) Base64 encode
+	b64 := base64.StdEncoding.EncodeToString(data) // :contentReference[oaicite:11]{index=11}
+
+	// 4) Собираем Data URI согласно RFC 2397
+	return fmt.Sprintf("data:%s;base64,%s", mimeType, b64), nil // :contentReference[oaicite:12]{index=12}
 }
