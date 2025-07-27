@@ -36,7 +36,6 @@ jobs:
             # Обновляем код
             git pull
           
-
             # Тянем свежие образы
             docker compose pull
       
