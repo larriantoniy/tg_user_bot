@@ -58,7 +58,6 @@ func main() {
 			logger.Info("HTTP server closed")
 		}
 	}()
-	//run
 
 	tdClient, err := tdlib.NewClient(cfg.APIID, cfg.APIHash, logger)
 	if err != nil {
