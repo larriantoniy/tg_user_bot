@@ -14,8 +14,6 @@ jobs:
     concurrency:
       group: deploy-vps
       cancel-in-progress: true
-    env:
-      DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
     steps:
       - name: Deploy to VPS via SSH
         uses: appleboy/ssh-action@v1.2.2
@@ -27,6 +25,7 @@ jobs:
           script: |
             sudo apt-get clean
             set -euo pipefail
+            
           
             # Переходим в директорию проекта (создадим, если нет)
             if [ ! -d /home/deploy/tg_user_bot ]; then
