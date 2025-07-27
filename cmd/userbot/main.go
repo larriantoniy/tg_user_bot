@@ -29,7 +29,7 @@ func main() {
 		os.Exit(1)
 	}
 	logger := setupLogger(cfg.Env)
-	//test
+
 	rdb := redisrepo.NewPredictionRepo(cfg.RedisAddr, "", cfg.RedisDB, logger)
 	ps := useCases.NewPredictionService(rdb, logger)
 	nr, err := neuro.NewNeuro(cfg, logger)
