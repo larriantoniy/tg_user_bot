@@ -18,7 +18,7 @@ services:
       - tdlib_db_data:/tdlib-db
       - tdlib_files_data:/tdlib-files
   redis:
-    image: "redis/redis-stack-server:latest" # Redis Stack (включает RediSearch)
+    image: redis/redis-stack-server:latest # Redis Stack (включает RediSearch)
     container_name: redis
     restart: unless-stopped
     entrypoint: >
