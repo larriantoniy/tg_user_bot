@@ -160,7 +160,7 @@ func (t *TDLibClient) Listen() (<-chan domain.Message, error) {
 }
 
 func (t *TDLibClient) IsChannelMember(username string) (bool, error) {
-	//  Нахождение чата
+
 	chat, err := t.client.SearchPublicChat(&client.SearchPublicChatRequest{
 		Username: username,
 	})
