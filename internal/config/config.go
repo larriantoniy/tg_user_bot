@@ -31,11 +31,6 @@ func Load() (*Config, error) {
 	channelsStr := os.Getenv("CHANNELS") // через запятую
 	neuroAddr := os.Getenv("NEURO_ADDR")
 	neuroToken := os.Getenv("NEURO_TOKEN") // через запятую
-	fmt.Println(apiIDStr)
-	fmt.Println(apiHash)
-	fmt.Println(channelsStr)
-	fmt.Println(neuroAddr)
-	fmt.Println(neuroToken)
 
 	if apiIDStr == "" || apiHash == "" || channelsStr == "" || neuroAddr == "" || neuroToken == "" {
 		return nil, fmt.Errorf("TELEGRAM_API_ID, TELEGRAM_API_HASH, NEURO_ADDR,NEURO_TOKEN и CHANNELS должны быть заданы")
