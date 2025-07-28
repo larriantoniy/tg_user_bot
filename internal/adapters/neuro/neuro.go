@@ -25,7 +25,7 @@ type Neuro struct {
 	client      *http.Client
 	ctx         *context.Context
 	logger      *slog.Logger
-	baseURL     string                   // https://api.deepseek.com/chat/completions
+	baseURL     string                   // https://openrouter.ai/api/v1
 	apiKey      string                   // TOKEN neuro
 	defaultBody *domain.DefaultNeuroBody // закодированное JSON-тело
 	// заготовленный http.Request
