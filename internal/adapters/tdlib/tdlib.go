@@ -33,7 +33,7 @@ func NewClient(apiID int32, apiHash string, logger *slog.Logger) (ports.Telegram
 		DeviceModel:        "GoUserBot",
 		ApplicationVersion: "0.1",
 		UseMessageDatabase: true,
-		UseFileDatabase:    false,
+		UseFileDatabase:    true,
 		DatabaseDirectory:  "./tdlib-db",
 		FilesDirectory:     "./tdlib-files",
 	}
