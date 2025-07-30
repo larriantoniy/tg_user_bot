@@ -28,7 +28,6 @@ type NeuroMessage struct {
 type DefaultNeuroBody struct {
 	Model    string         `json:"model"`
 	Messages []NeuroMessage `json:"messages"`
-	Stream   bool           `json:"stream"`
 }
 
 // NeuroResponse соответствует корневому JSON-объекту.

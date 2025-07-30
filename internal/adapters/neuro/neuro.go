@@ -50,7 +50,6 @@ func NewNeuro(cfg *config.Config, logger *slog.Logger) (*Neuro, error) {
 				},
 			},
 		},
-		Stream: false,
 	}
 
 	// 3) Собираем объект Neuro
