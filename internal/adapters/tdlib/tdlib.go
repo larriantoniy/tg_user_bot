@@ -38,7 +38,7 @@ func NewClient(apiID int32, apiHash string, logger *slog.Logger) (ports.Telegram
 		FilesDirectory:     "./tdlib-files",
 	}
 	if _, err := client.SetLogVerbosityLevel(&client.SetLogVerbosityLevelRequest{
-		NewVerbosityLevel: 1,
+		NewVerbosityLevel: 4,
 	}); err != nil {
 		logger.Error("TDLib SetLogVerbosity level", "error", err)
 	}
