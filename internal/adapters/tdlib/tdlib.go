@@ -316,7 +316,17 @@ func (t *TDLibClient) GetPhotoBase64ById(photoId string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("GetRemoteFile failed: %w", err)
 	}
-	fmt.Printf("remoteFile.Id = %d", remoteFile.Id)
+
+	_, err = t.client.DownloadFile(&client.DownloadFileRequest{
+		FileId:      remoteFile.Id,
+		Priority:    32,
+		Offset:      0,
+		Limit:       0,
+		Synchronous: false,
+	})
+	if err != nil {
+		return "", fmt.Errorf("DownloadFile failed: %w", err)
+	}
 	// 2. Начинаем опрашивать статус загрузки
 	var fileInfo *client.File
 	for {
