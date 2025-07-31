@@ -92,16 +92,6 @@ func (n *Neuro) GetCompletion(ctx context.Context, msg *domain.Message, parsedRe
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+n.apiKey)
 
-	// Логируем URL, метод и заголовки — безопасно
-	n.logger.Info("Request to neuro",
-		"url", req.URL.String(),
-		"method", req.Method,
-		"headers", req.Header,
-	)
-
-	// Логируем тело запроса (если нужно для отладки)
-	n.logger.Debug("Request body", "body", string(bodyBytes))
-
 	// Ответ нейросети
 	var nr domain.NeuroResponse
 
