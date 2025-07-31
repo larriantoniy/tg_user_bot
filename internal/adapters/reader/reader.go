@@ -70,7 +70,7 @@ func (r *Reader) Read(ctx context.Context, photoFile string, wg *sync.WaitGroup)
 	req.Header.Set("apikey", r.apiKey)
 
 	// Логируем URL, метод и заголовки — безопасно
-	r.logger.Info("Request to neuro",
+	r.logger.Info("Request to reader",
 		"url", req.URL.String(),
 		"method", req.Method,
 		"headers", req.Header,
