@@ -11,15 +11,17 @@ import (
 
 // Config хранит настройки приложения
 type Config struct {
-	APIID      int32
-	APIHash    string
-	Channels   []string
-	ServerAddr string `yaml:"server" env-required:"true"`
-	Env        string `yaml:"env" env-required:"true"`
-	RedisAddr  string `yaml:"redis_addr" env-required:"true"`
-	RedisDB    int    `yaml:"redis_db" env-default:"0"`
-	NeuroAddr  string
-	NeuroToken string
+	APIID       int32
+	APIHash     string
+	Channels    []string
+	ServerAddr  string `yaml:"server" env-required:"true"`
+	Env         string `yaml:"env" env-required:"true"`
+	RedisAddr   string `yaml:"redis_addr" env-required:"true"`
+	RedisDB     int    `yaml:"redis_db" env-default:"0"`
+	NeuroAddr   string
+	NeuroToken  string
+	ReaderAddr  string
+	ReaderToken string
 }
 
 // Load читает настройки из переменных окружения

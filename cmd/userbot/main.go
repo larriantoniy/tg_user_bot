@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/larriantoniy/tg_user_bot/internal/adapters/neuro"
+	"github.com/larriantoniy/tg_user_bot/internal/adapters/reader"
 	redisrepo "github.com/larriantoniy/tg_user_bot/internal/adapters/redis"
 	"github.com/larriantoniy/tg_user_bot/internal/adapters/tdlib"
 	"github.com/larriantoniy/tg_user_bot/internal/config"
@@ -13,6 +14,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"sync"
 	"time"
 )
 
@@ -33,6 +35,7 @@ func main() {
 	rdb := redisrepo.NewPredictionRepo(cfg.RedisAddr, "", cfg.RedisDB, logger)
 	ps := useCases.NewPredictionService(rdb, logger)
 	nr, err := neuro.NewNeuro(cfg, logger)
+	rr, err := reader.NewReader(cfg, logger)
 	if err != nil {
 		logger.Error("Cant init New Neuro")
 		os.Exit(1)
@@ -76,8 +79,13 @@ func main() {
 
 		for msg := range updates {
 			logger.Info("New message", "chat_id", msg.ChatID, "text", msg.Text)
+
 			if msg.PhotoFile != "" {
-				newMsg, err := nr.GetCompletion(context.Background(), &msg)
+				wg := &sync.WaitGroup{}
+				wg.Add(1)
+				res, err := rr.Read(context.Background(), msg.PhotoFile, wg)
+				wg.Wait()
+				newMsg, err := nr.GetCompletion(context.Background(), &msg, res)
 				if err == nil {
 					if ps.IsPrediction(newMsg.Text) {
 						ps.Save(newMsg)

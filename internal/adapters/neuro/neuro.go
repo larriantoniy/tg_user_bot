@@ -19,7 +19,8 @@ const prompt = "Вот скриншот. " +
 	"Вид спорта: [Вид спорта на английском языке если это ставка на спортивное событие , и n/a если это не ставка на спортивное событие или ставка на сыгранное спортивное событие]\n" +
 	"Ставка: [true если это ставка на спортивное событие , и false если это не ставка на спортивное событие или ставка на сыгранное спортивное событие]\n" +
 	"Дата: [Дата и время события в формате DD-MM-YYYY HH:MM]\n" +
-	"Без домыслов, анализа или пояснений — только данные со скриншота."
+	"Без домыслов, анализа или пояснений\n" +
+	"Вот информация:"
 
 type Neuro struct {
 	client      *http.Client
@@ -42,10 +43,6 @@ func NewNeuro(cfg *config.Config, logger *slog.Logger) (*Neuro, error) {
 					{
 						Type: "text", // "text" для промпта
 						Text: prompt,
-					},
-					{
-						Type:     "image_url", // "image_url" , шлем фото в б64
-						ImageUrl: &domain.ImageUrl{Url: ""},
 					},
 				},
 			},
@@ -73,7 +70,7 @@ func retry(attempts int, sleep time.Duration, fn func() error) error {
 	return err
 }
 
-func (n *Neuro) GetCompletion(ctx context.Context, msg *domain.Message) (*domain.Message, error) {
+func (n *Neuro) GetCompletion(ctx context.Context, msg *domain.Message, parsedRes string) (*domain.Message, error) {
 	// Подготовка тела
 	body := n.defaultBody
 	///todo сейчас не обрабатываем сообщения без фото , нужно подумать как обрабатывать
@@ -81,7 +78,7 @@ func (n *Neuro) GetCompletion(ctx context.Context, msg *domain.Message) (*domain
 		return msg, nil
 	}
 
-	body.Messages[0].Content[1].ImageUrl.Url = msg.PhotoFile
+	body.Messages[0].Content[0].Text = body.Messages[0].Content[0].Text + parsedRes
 	bodyBytes, err := json.Marshal(body)
 	if err != nil {
 		return msg, fmt.Errorf("marshal body: %w", err)
