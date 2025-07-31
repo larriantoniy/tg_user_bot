@@ -30,11 +30,13 @@ func Load() (*Config, error) {
 	cfg := MustLoadPath(path)
 	apiIDStr := os.Getenv("TELEGRAM_API_ID")
 	apiHash := os.Getenv("TELEGRAM_API_HASH")
-	channelsStr := os.Getenv("CHANNELS") // через запятую
+	channelsStr := os.Getenv("CHANNELS")
 	neuroAddr := os.Getenv("NEURO_ADDR")
-	neuroToken := os.Getenv("NEURO_TOKEN") // через запятую
+	neuroToken := os.Getenv("NEURO_TOKEN")
+	readerAddr := os.Getenv("READER_ADDR")
+	readerToken := os.Getenv("READER_TOKEN")
 
-	if apiIDStr == "" || apiHash == "" || channelsStr == "" || neuroAddr == "" || neuroToken == "" {
+	if apiIDStr == "" || apiHash == "" || channelsStr == "" || neuroAddr == "" || readerToken == "" || readerAddr == "" || neuroToken == "" {
 		return nil, fmt.Errorf("TELEGRAM_API_ID, TELEGRAM_API_HASH, NEURO_ADDR,NEURO_TOKEN и CHANNELS должны быть заданы")
 	}
 
@@ -47,15 +49,17 @@ func Load() (*Config, error) {
 	channels := strings.Split(channelsStr, ",")
 
 	return &Config{
-		APIID:      apiID32,
-		APIHash:    apiHash,
-		Channels:   channels,
-		ServerAddr: cfg.ServerAddr, // <— добавили
-		Env:        cfg.Env,        // <— добавили
-		RedisAddr:  cfg.RedisAddr,
-		RedisDB:    cfg.RedisDB,
-		NeuroAddr:  neuroAddr,
-		NeuroToken: neuroToken,
+		APIID:       apiID32,
+		APIHash:     apiHash,
+		Channels:    channels,
+		ServerAddr:  cfg.ServerAddr, // <— добавили
+		Env:         cfg.Env,        // <— добавили
+		RedisAddr:   cfg.RedisAddr,
+		RedisDB:     cfg.RedisDB,
+		NeuroAddr:   neuroAddr,
+		NeuroToken:  neuroToken,
+		ReaderAddr:  readerAddr,
+		ReaderToken: readerToken,
 	}, nil
 }
 
