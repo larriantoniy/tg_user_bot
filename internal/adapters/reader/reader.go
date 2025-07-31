@@ -30,7 +30,7 @@ func NewReader(cfg *config.Config, logger *slog.Logger) (*Reader, error) {
 		Language: "rus",
 	}
 
-	// 3) Собираем объект Neuro
+	// 3) Собираем объект Reader
 	return &Reader{
 		client:      &http.Client{},
 		logger:      logger,
