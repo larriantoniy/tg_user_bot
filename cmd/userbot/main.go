@@ -85,13 +85,15 @@ func main() {
 				wg.Add(1)
 				res, err := rr.Read(context.Background(), msg.PhotoFile, wg)
 				wg.Wait()
-				newMsg, err := nr.GetCompletion(context.Background(), &msg, res)
 				if err == nil {
-					if ps.IsPrediction(newMsg.Text) {
-						ps.Save(newMsg)
+					newMsg, err := nr.GetCompletion(context.Background(), &msg, res)
+					if err == nil {
+						if ps.IsPrediction(newMsg.Text) {
+							ps.Save(newMsg)
+						}
+					} else {
+						logger.Error("GetCompletion", "err", err)
 					}
-				} else {
-					logger.Error("GetCompletion", "err", err)
 				}
 			}
 

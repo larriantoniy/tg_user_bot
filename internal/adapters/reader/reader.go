@@ -68,6 +68,7 @@ func (r *Reader) Read(ctx context.Context, photoFile string, wg *sync.WaitGroup)
 	}
 
 	req.Header.Set("apikey", r.apiKey)
+	req.Header.Set("Content-Type", "multipart/form-data")
 
 	// Логируем URL, метод и заголовки — безопасно
 	r.logger.Info("Request to reader",
