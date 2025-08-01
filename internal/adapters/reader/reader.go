@@ -1,117 +1,47 @@
 package reader
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"github.com/larriantoniy/tg_user_bot/internal/config"
-	"github.com/larriantoniy/tg_user_bot/internal/domain"
-	"io"
+	ocr "github.com/ranghetto/go_ocr_space"
 	"log/slog"
-	"net/http"
 	"sync"
-	"time"
 )
 
 type Reader struct {
-	client      *http.Client
-	ctx         *context.Context
-	logger      *slog.Logger
-	baseURL     string                    // https://openrouter.ai/api/v1
-	apiKey      string                    // TOKEN neuro
-	defaultBody *domain.DefaultReaderBody // закодированное JSON-тело
+	config *ocr.Config
+
+	logger *slog.Logger
+
 	// заготовленный http.Request
 }
 
 func NewReader(cfg *config.Config, logger *slog.Logger) (*Reader, error) {
-	// 1) Кодируем заранее JSON-тело
-	body := domain.DefaultReaderBody{
-		Language: "rus",
-	}
+
+	config := ocr.InitConfig(cfg.ReaderToken, "eng", ocr.OCREngine2)
 
 	// 3) Собираем объект Reader
 	return &Reader{
-		client:      &http.Client{},
-		logger:      logger,
-		baseURL:     cfg.ReaderAddr,
-		apiKey:      cfg.ReaderToken,
-		defaultBody: &body,
+		config: &config,
+		logger: logger,
 	}, nil
-}
-
-func retry(attempts int, sleep time.Duration, fn func() error) error {
-	var err error
-	for i := 0; i < attempts; i++ {
-		if err = fn(); err == nil {
-			return nil
-		}
-		time.Sleep(sleep)
-	}
-	return err
 }
 
 func (r *Reader) Read(ctx context.Context, photoFile string, wg *sync.WaitGroup) (string, error) {
 	defer wg.Done()
-	// Подготовка тела
-	body := r.defaultBody
-	body.Base64Image = photoFile
-	bodyBytes, err := json.Marshal(body)
+	result, err := r.config.ParseFromBase64(photoFile)
 	if err != nil {
-		return "", fmt.Errorf("marshal body: %w", err)
+		fmt.Println(err)
 	}
+	//printing the just the parsed text
+	fmt.Println(result.JustText())
 
-	// Создание запроса
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, r.baseURL, bytes.NewReader(bodyBytes))
-	if err != nil {
-		return "", fmt.Errorf("new request: %w", err)
-	}
-
-	req.Header.Set("apikey", r.apiKey)
-	req.Header.Set("Content-Type", "multipart/form-data")
-
-	// Логируем URL, метод и заголовки — безопасно
-	r.logger.Info("Request to reader",
-		"url", req.URL.String(),
-		"method", req.Method,
-		"headers", req.Header,
-	)
-
-	// Логируем тело запроса (если нужно для отладки)
-	r.logger.Debug("Request body", "body", string(bodyBytes))
-
-	// Ответ нейросети
-	var rr domain.ReaderResponse
-
-	err = retry(3, time.Second, func() error {
-		resp, err := r.client.Do(req)
-		if err != nil {
-			r.logger.Error("HTTP request to reader failed", "err", err)
-			return err
-		}
-		defer resp.Body.Close()
-
-		if resp.StatusCode != http.StatusOK {
-			data, _ := io.ReadAll(resp.Body)
-			r.logger.Error("reader API returned error",
-				"status", resp.StatusCode,
-				"body", string(data),
-			)
-			return fmt.Errorf("status %d: %s", resp.StatusCode, string(data))
-		}
-
-		return json.NewDecoder(resp.Body).Decode(&rr)
-	})
-
-	if err != nil {
-		return "", fmt.Errorf("request failed: %w", err)
-	}
-
-	if len(rr.ParsedResults) == 0 {
+	if len(result.JustText()) == 0 {
 		return "", fmt.Errorf("empty ParsedResults")
 	}
 
-	r.logger.Info("After reader processing", "result", *rr.ParsedResults[0].ParsedText)
+	r.logger.Info("After reader processing", "result", result.JustText())
 
-	return *rr.ParsedResults[0].ParsedText, nil
+	return result.JustText(), nil
 }
