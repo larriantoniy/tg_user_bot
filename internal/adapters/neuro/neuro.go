@@ -70,7 +70,7 @@ func retry(attempts int, sleep time.Duration, fn func() error) error {
 	return err
 }
 
-func (n *Neuro) GetCompletion(ctx context.Context, msg *domain.Message, parsedRes string) (*domain.Message, error) {
+func (n *Neuro) GetCompletion(ctx context.Context, msg domain.Message, parsedRes string) (domain.Message, error) {
 	// Подготовка тела
 	body := n.defaultBody
 	///todo сейчас не обрабатываем сообщения без фото , нужно подумать как обрабатывать

@@ -86,7 +86,7 @@ func main() {
 				res, err := rr.Read(msg.PhotoFile, wg)
 				wg.Wait()
 				if err == nil {
-					newMsg, err := nr.GetCompletion(context.Background(), &msg, res)
+					newMsg, err := nr.GetCompletion(context.Background(), msg, res)
 					if err == nil {
 						if ps.IsPrediction(newMsg.Text) {
 							ps.Save(newMsg)

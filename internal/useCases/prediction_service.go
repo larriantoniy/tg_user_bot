@@ -22,11 +22,11 @@ func NewPredictionService(repo ports.PredictionRepo, logger *slog.Logger) *Predi
 		repo:          repo,
 		decimalRegexp: regexp.MustCompile(`\b\d+\.\d{2}\b`),
 		logger:        logger,
-		re:            regexp.MustCompile(`(?i)Вид спорта:\s*([a-z]+|n/a)\s*,?\s*Ставка:\s*(true|false)\s*,?\s*Дата:\s*(\d{2}\.\d{2}\.\d{2})`),
+		re:            regexp.MustCompile(`(?i)Вид спорта:\s*([a-z]+|n/a)\s*,?\s*Ставка:\s*(true|false)\s*,?\s*Дата:\s*(\d{2}[-.]\d{2}[-.](?:\d{2}|\d{4})(?:\s+\d{2}:\d{2})?)`),
 	}
 }
 
-func (s *PredictionService) Save(msg *domain.Message) error {
+func (s *PredictionService) Save(msg domain.Message) error {
 	s.logger.Info("Received message from chat:", msg.ChatName, "processing ...")
 	pred := &domain.Prediction{
 		ID:        uuid.New().String(),
