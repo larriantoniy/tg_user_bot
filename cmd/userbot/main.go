@@ -10,11 +10,11 @@ import (
 	"github.com/larriantoniy/tg_user_bot/internal/adapters/tdlib"
 	"github.com/larriantoniy/tg_user_bot/internal/config"
 	delivery "github.com/larriantoniy/tg_user_bot/internal/delivery/http"
+	"github.com/larriantoniy/tg_user_bot/internal/domain"
 	"github.com/larriantoniy/tg_user_bot/internal/useCases"
 	"log/slog"
 	"net/http"
 	"os"
-	"sync"
 	"time"
 )
 
@@ -78,24 +78,31 @@ func main() {
 		}
 
 		for msg := range updates {
-			logger.Info("New message", "chat_id", msg.ChatID, "text", msg.Text)
 
-			if msg.PhotoFile != "" {
-				wg := &sync.WaitGroup{}
-				wg.Add(1)
-				res, err := rr.Read(msg.PhotoFile, wg)
-				wg.Wait()
-				if err == nil {
-					newMsg, err := nr.GetCompletion(context.Background(), msg, res)
-					if err == nil {
-						if ps.IsPrediction(newMsg.Text) {
-							ps.Save(newMsg)
-						}
-					} else {
-						logger.Error("GetCompletion", "err", err)
-					}
-				}
+			logger.Info("New message", "chat_id", msg.ChatID, "text", msg.Text)
+			if msg.PhotoFile == "" {
+				continue
 			}
+			func(m domain.Message) {
+				ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+				defer cancel()
+
+				res, err := rr.Read(ctx, m.PhotoFile)
+				if err != nil {
+					logger.Error("reader", "err", err)
+					return
+				}
+
+				newMsg, err := nr.GetCompletion(ctx, m, res)
+				if err != nil {
+					logger.Error("GetCompletion", "err", err)
+					return
+				}
+
+				if ps.IsPrediction(newMsg.Text) {
+					_ = ps.Save(newMsg)
+				}
+			}(msg)
 
 		}
 
