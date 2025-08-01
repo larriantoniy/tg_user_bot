@@ -94,6 +94,7 @@ func (n *Neuro) GetCompletion(ctx context.Context, msg *domain.Message, parsedRe
 
 	// Ответ нейросети
 	var nr domain.NeuroResponse
+	n.logger.Info("Neuro request ", req.Body, req.Header, req.URL)
 
 	err = retry(3, time.Second, func() error {
 		resp, err := n.client.Do(req)

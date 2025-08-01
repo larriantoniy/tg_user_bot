@@ -33,8 +33,6 @@ func (r *Reader) Read(photoFile string, wg *sync.WaitGroup) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("error ocr read: %w", err)
 	}
-	//printing the just the parsed text
-	fmt.Println(result.JustText())
 
 	if len(result.JustText()) == 0 {
 		return "", fmt.Errorf("empty ParsedResults")
