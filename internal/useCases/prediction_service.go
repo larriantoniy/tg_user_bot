@@ -64,8 +64,7 @@ func (s *PredictionService) IsPrediction(input string) bool {
 	match := s.re.FindStringSubmatch(input)
 	// match[0] — вся строка, match[1] — вид спорта, match[2] — true/false :contentReference[oaicite:4]{index=4}
 
-	if len(match) != 3 {
-		// Нет совпадений или неправильный формат
+	if match == nil { // нет совпадения
 		s.logger.Info("Message is not prediction", input)
 		return false
 	}
