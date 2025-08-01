@@ -22,7 +22,9 @@ func NewPredictionService(repo ports.PredictionRepo, logger *slog.Logger) *Predi
 		repo:          repo,
 		decimalRegexp: regexp.MustCompile(`\b\d+\.\d{2}\b`),
 		logger:        logger,
-		re:            regexp.MustCompile(`(?i)Вид спорта:\s*([a-z]+|n/a)\s*,?\s*Ставка:\s*(true|false)\s*,?\s*Дата:\s*(\d{2}[-.]\d{2}[-.](?:\d{2}|\d{4})(?:\s+\d{2}:\d{2})?)`),
+		// спорт: либо "n/a", либо слово(а)/цифры/пробелы (без запятых)
+		// дата:  DD.MM.YY(YY) или DD-MM-YY(YY), опционально " HH:MM"
+		re: regexp.MustCompile(`(?i)Вид спорта:\s*(n/a|[a-z0-9 ]+)\s*,?\s*Ставка:\s*(true|false)\s*,?\s*Дата:\s*(\d{2}[-.]\d{2}[-.](?:\d{2}|\d{4})(?:\s+\d{2}:\d{2})?)`),
 	}
 }
 
