@@ -1,7 +1,6 @@
 package reader
 
 import (
-	"context"
 	"fmt"
 	"github.com/larriantoniy/tg_user_bot/internal/config"
 	ocr "github.com/ranghetto/go_ocr_space"
@@ -28,11 +27,11 @@ func NewReader(cfg *config.Config, logger *slog.Logger) (*Reader, error) {
 	}, nil
 }
 
-func (r *Reader) Read(ctx context.Context, photoFile string, wg *sync.WaitGroup) (string, error) {
+func (r *Reader) Read(photoFile string, wg *sync.WaitGroup) (string, error) {
 	defer wg.Done()
 	result, err := r.config.ParseFromBase64(photoFile)
 	if err != nil {
-		fmt.Println(err)
+		return "", fmt.Errorf("error ocr read: %w", err)
 	}
 	//printing the just the parsed text
 	fmt.Println(result.JustText())

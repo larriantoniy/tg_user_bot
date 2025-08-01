@@ -83,7 +83,7 @@ func main() {
 			if msg.PhotoFile != "" {
 				wg := &sync.WaitGroup{}
 				wg.Add(1)
-				res, err := rr.Read(context.Background(), msg.PhotoFile, wg)
+				res, err := rr.Read(msg.PhotoFile, wg)
 				wg.Wait()
 				if err == nil {
 					newMsg, err := nr.GetCompletion(context.Background(), &msg, res)
