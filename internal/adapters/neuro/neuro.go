@@ -10,7 +10,6 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
-	"strings"
 	"time"
 )
 
@@ -70,24 +69,25 @@ func retry(attempts int, sleep time.Duration, fn func() error) error {
 	return err
 }
 
-func (n *Neuro) GetCompletion(ctx context.Context, msg domain.Message, parsedRes string) (domain.Message, error) {
+func (n *Neuro) GetCompletion(ctx context.Context, msg domain.Message, parsedRes string) (string, error) {
 	// Подготовка тела
 	body := n.defaultBody
-	///todo сейчас не обрабатываем сообщения без фото , нужно подумать как обрабатывать
+
 	if msg.PhotoFile == "" {
-		return msg, nil
+		body.Messages[0].Content[0].Text = body.Messages[0].Content[0].Text + msg.Text
+	} else {
+		body.Messages[0].Content[0].Text = body.Messages[0].Content[0].Text + parsedRes
 	}
 
-	body.Messages[0].Content[0].Text = body.Messages[0].Content[0].Text + parsedRes
 	bodyBytes, err := json.Marshal(body)
 	if err != nil {
-		return msg, fmt.Errorf("marshal body: %w", err)
+		return "", fmt.Errorf("marshal body: %w", err)
 	}
 
 	// Создание запроса
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, n.baseURL, bytes.NewReader(bodyBytes))
 	if err != nil {
-		return msg, fmt.Errorf("new request: %w", err)
+		return "", fmt.Errorf("new request: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+n.apiKey)
@@ -117,23 +117,14 @@ func (n *Neuro) GetCompletion(ctx context.Context, msg domain.Message, parsedRes
 	})
 
 	if err != nil {
-		return msg, fmt.Errorf("request failed: %w", err)
+		return "", fmt.Errorf("request failed: %w", err)
 	}
 
 	if len(nr.Choices) == 0 {
-		return msg, fmt.Errorf("empty choices")
+		return "", fmt.Errorf("empty choices")
 	}
 
-	n.logger.Info("Response from neuro", "content", nr.Choices[0].Message.Content)
+	n.logger.Info("After neuro processing", "result", nr.Choices[0].Message.Content)
 
-	// Склеиваем исходный и нейроответ
-	var sb strings.Builder
-	sb.WriteString(msg.Text)
-	sb.WriteString("\n")
-	sb.WriteString(nr.Choices[0].Message.Content)
-
-	n.logger.Info("After neuro processing", "result", sb.String())
-
-	msg.Text = sb.String()
-	return msg, nil
+	return nr.Choices[0].Message.Content, nil
 }

@@ -87,20 +87,20 @@ func main() {
 				ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 				defer cancel()
 
-				res, err := rr.Read(ctx, m.PhotoFile)
+				parsed, err := rr.Read(ctx, m.PhotoFile)
 				if err != nil {
 					logger.Error("reader", "err", err)
 					return
 				}
 
-				newMsg, err := nr.GetCompletion(ctx, m, res)
+				res, err := nr.GetCompletion(ctx, m, parsed)
 				if err != nil {
 					logger.Error("GetCompletion", "err", err)
 					return
 				}
 
-				if ps.IsPrediction(newMsg.Text) {
-					_ = ps.Save(newMsg)
+				if ps.IsPrediction(res) {
+					_ = ps.Save(m)
 				}
 			}(msg)
 
