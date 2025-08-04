@@ -8,7 +8,6 @@ import (
 	"github.com/larriantoniy/tg_user_bot/internal/ports"
 	"github.com/redis/go-redis/v9"
 	"log/slog"
-	"time"
 )
 
 type PredictionRepo struct {
@@ -38,11 +37,12 @@ func (r *PredictionRepo) Save(pred *domain.Prediction) error {
 		return err
 	}
 	// TTL = 48 часов
-	if err := r.client.Set(r.ctx, key, data, 48*time.Hour).Err(); err != nil {
-		r.logger.Error("Redis set failed", key, "Redis set err", err)
+	res, err := r.client.Do(r.ctx, "JSON.SET", key, "$", string(data)).Result()
+	if err != nil {
+		r.logger.Error("Redis JSON.SET failed", "key", key, "err", err)
 		return err
 	}
-	r.logger.Info("Redis set succeeded", key)
+	r.logger.Info("Redis set succeeded", key, "res", res)
 	return nil
 }
 
