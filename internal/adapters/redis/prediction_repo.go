@@ -77,27 +77,27 @@ func parseSearchResult(res interface{}) ([]domain.Prediction, error) {
 	}
 
 	preds := make([]domain.Prediction, 0, len(arr)/2)
-	// начинаем с 1, т.к. arr[0] = totalCount
-	for i := 1; i+1 < len(arr); i += 2 {
-		rawDoc := arr[i+1]
-		var data []byte
 
-		switch v := rawDoc.(type) {
-		case []byte:
-			data = v
-		case string:
-			data = []byte(v)
-		default:
-			return preds, fmt.Errorf("unexpected document type: %T", rawDoc)
+	// начинаем с 1, потому что arr[0] — это общее число найденных документов
+	for i := 1; i+1 < len(arr); i += 2 {
+		docFields, ok := arr[i+1].([]interface{})
+		if !ok || len(docFields) != 2 {
+			return preds, fmt.Errorf("unexpected document format at index %d: %T", i+1, arr[i+1])
+		}
+
+		// docFields[1] — это строка JSON
+		jsonStr, ok := docFields[1].(string)
+		if !ok {
+			return preds, fmt.Errorf("unexpected json payload type: %T", docFields[1])
 		}
 
 		var p domain.Prediction
-		if err := json.Unmarshal(data, &p); err != nil {
+		if err := json.Unmarshal([]byte(jsonStr), &p); err != nil {
 			return preds, fmt.Errorf("failed to unmarshal prediction JSON: %w", err)
 		}
 
 		preds = append(preds, p)
 	}
-	fmt.Println("Redis GET ALL predictions", "res", fmt.Sprintf("%s", res))
+
 	return preds, nil
 }
