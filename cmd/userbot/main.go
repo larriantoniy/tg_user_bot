@@ -100,7 +100,7 @@ func main() {
 				}
 
 				if ps.IsPrediction(res) {
-					_ = ps.Save(m)
+					_ = ps.Save(m, res)
 				}
 			}(msg)
 

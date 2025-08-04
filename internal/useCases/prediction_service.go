@@ -28,16 +28,16 @@ func NewPredictionService(repo ports.PredictionRepo, logger *slog.Logger) *Predi
 	}
 }
 
-func (s *PredictionService) Save(msg domain.Message) error {
-	s.logger.Info("Received message from chat:", msg.ChatName, "processing ...")
+func (s *PredictionService) Save(msg domain.Message, neuroRes string) error {
+	s.logger.Info("Received message from chat:", msg.ChatName, "processing ...", neuroRes, neuroRes)
 	pred := &domain.Prediction{
 		ID:        uuid.New().String(),
 		ChatName:  msg.ChatName,
 		ChatID:    msg.ChatID,
 		RawText:   msg.Text,
-		Sport:     s.extractSport(msg.Text),
+		Sport:     s.extractSport(neuroRes),
 		CreatedAt: time.Now(),
-		EventDate: s.extractEventDate(msg.Text),
+		EventDate: s.extractEventDate(neuroRes),
 	}
 	s.logger.Info("Saving", "prediction", pred)
 	return s.repo.Save(pred)
