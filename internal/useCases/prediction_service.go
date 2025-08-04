@@ -29,7 +29,7 @@ func NewPredictionService(repo ports.PredictionRepo, logger *slog.Logger) *Predi
 }
 
 func (s *PredictionService) Save(msg domain.Message, neuroRes string) error {
-	s.logger.Info("Received message from chat:", msg.ChatName, "processing ...", neuroRes, neuroRes)
+	s.logger.Info("Received message from chat:", msg.ChatName, "processing ...", neuroRes, "neuroRes")
 	pred := &domain.Prediction{
 		ID:        uuid.New().String(),
 		ChatName:  msg.ChatName,
