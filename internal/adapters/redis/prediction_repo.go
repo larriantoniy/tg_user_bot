@@ -66,8 +66,17 @@ func (r *PredictionRepo) GetAll() ([]domain.Prediction, error) {
 		r.logger.Error("Redis GET ALL predictions failed", "err", err)
 		return nil, err
 	}
-	r.logger.Info("Redis GET ALL predictions", "res", fmt.Sprintf("%s", res))
-	return parseSearchResult(res)
+	switch resTyped := res.(type) {
+	case []interface{}:
+		r.logger.Info("FT.SEARCH returned []interface{}", "len", len(resTyped))
+		return parseSearchResult(resTyped)
+	default:
+		r.logger.Error("FT.SEARCH returned unexpected type", "type", fmt.Sprintf("%T", res))
+		b, _ := json.MarshalIndent(res, "", "  ")
+		r.logger.Error("Raw Redis result", "json", string(b))
+		return nil, fmt.Errorf("unexpected result type: %T", res)
+	}
+
 }
 
 func parseSearchResult(res interface{}) ([]domain.Prediction, error) {
