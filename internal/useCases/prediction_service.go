@@ -45,6 +45,7 @@ func (s *PredictionService) Save(msg domain.Message, neuroRes string) error {
 
 func (s *PredictionService) GetAll() ([]domain.Prediction, error) {
 	res, err := s.repo.GetAll()
+
 	if err != nil {
 		return res, err
 	}

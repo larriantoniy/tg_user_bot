@@ -60,23 +60,28 @@ func (r *PredictionRepo) FindByText(query string) ([]domain.Prediction, error) {
 
 func (r *PredictionRepo) GetAll() ([]domain.Prediction, error) {
 	// Выполняем полнотекстовый запрос на получение всех записей
+	r.logger.Info("Redis client real type", "type", fmt.Sprintf("%T", r.client))
 	args := []interface{}{"FT.SEARCH", "idx:predictions", "*", "LIMIT", "0", "1000"}
 	res, err := r.client.Do(r.ctx, args...).Result()
 	if err != nil {
-		r.logger.Error("Redis GET ALL predictions failed", "err", err)
 		return nil, err
 	}
+
+	r.logger.Info("RAW Redis result type", "type", fmt.Sprintf("%T", res))
+
 	switch resTyped := res.(type) {
 	case []interface{}:
-		r.logger.Info("FT.SEARCH returned []interface{}", "len", len(resTyped))
 		return parseSearchResult(resTyped)
+	case map[interface{}]interface{}:
+		// Промежуточный фикс
+		list := make([]interface{}, 0, len(resTyped))
+		for _, val := range resTyped {
+			list = append(list, val)
+		}
+		return parseSearchResult(list)
 	default:
-		r.logger.Error("FT.SEARCH returned unexpected type", "type", fmt.Sprintf("%T", res))
-		b, _ := json.MarshalIndent(res, "", "  ")
-		r.logger.Error("Raw Redis result", "json", string(b))
-		return nil, fmt.Errorf("unexpected result type: %T", res)
+		return nil, fmt.Errorf("unknown Redis result type: %T", res)
 	}
-
 }
 
 func parseSearchResult(res interface{}) ([]domain.Prediction, error) {
