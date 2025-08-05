@@ -16,6 +16,6 @@ else
   echo "Index 'idx:predictions' already exists or failed to create."
 fi
 
-# Проверка
+
 echo "Verifying created indexes:"
 redis-cli -h 127.0.0.1 -p 6379 FT._LIST
